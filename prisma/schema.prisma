@@ -1,0 +1,15 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/@generated/prisma"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id         Int    @id @default(autoincrement())
+  first_name String
+  last_name  String
+}

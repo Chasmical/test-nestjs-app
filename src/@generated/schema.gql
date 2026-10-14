@@ -1,0 +1,14 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Profile {
+  first_name: String!
+  full_name: String!
+  id: Int!
+  last_name: String!
+}
+
+type Query {
+  profile(id: Int!): Profile
+}

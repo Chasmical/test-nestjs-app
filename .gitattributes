@@ -1,0 +1,7 @@
+* text=auto eol=lf
+src/modules/prisma/contract.json linguist-generated
+src/modules/prisma/contract.d.ts linguist-generated
+src/modules/prisma/ops.json linguist-generated
+src/modules/prisma/migration.json linguist-generated
+migrations/snapshots/**/contract.json linguist-generated
+migrations/snapshots/**/contract.d.ts linguist-generated
