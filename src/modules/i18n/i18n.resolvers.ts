@@ -26,7 +26,7 @@ export class I18nLanguageResolver {
   async language(@Args("id", { type: () => Int }) id: number): Promise<Language | null> {
     return this.i18nService.findLanguageBy({ id });
   }
-  @Query(() => [Language], { nullable: true })
+  @Query(() => [Language], { nullable: true, complexity: est => 10 * est.childComplexity })
   async languages(): Promise<Language[] | null> {
     return this.i18nService.getAllLanguages();
   }

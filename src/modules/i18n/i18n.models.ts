@@ -4,7 +4,7 @@ import { Field, ObjectType, Int } from "@nestjs/graphql";
 export class I18nString {
   @Field(() => Int)
   id: number;
-  @Field(() => [Translation])
+  @Field(() => [Translation], { complexity: est => 10 * est.childComplexity })
   translations: Translation[];
 }
 
@@ -39,7 +39,7 @@ export class Translation {
 // Anonymous I18nString and Translation, without assigned ids (used by profile().full_name_i18n)
 @ObjectType()
 export class AnonI18nString {
-  @Field(() => [AnonTranslation])
+  @Field(() => [AnonTranslation], { complexity: est => 10 * est.childComplexity })
   translations: AnonTranslation[];
 }
 

@@ -5,6 +5,7 @@ import { Module } from "@nestjs/common";
 import { GraphQLModule } from "@nestjs/graphql";
 import { I18nModule } from "./modules/i18n/i18n.module.js";
 import { ProfilesModule } from "./modules/profiles/profiles.module.js";
+import { GraphQLComplexityPlugin } from "./plugins/graphql-complexity.plugin.js";
 
 const defaultQuery = `query {
   profile(id: 123) {
@@ -27,6 +28,7 @@ const defaultQuery = `query {
 `;
 
 @Module({
+  providers: [GraphQLComplexityPlugin],
   imports: [
     I18nModule,
     ProfilesModule,
