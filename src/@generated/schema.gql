@@ -2,13 +2,43 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type I18nString {
+  id: Int!
+  translations: [Translation!]!
+}
+
+type Language {
+  id: Int!
+  ietf_tag: String!
+  name: String!
+  name_i18n: I18nString!
+  name_id: Int!
+  three_char_code: String
+  two_char_code: String
+}
+
 type Profile {
   first_name: String!
+  first_name_i18n: I18nString!
+  first_name_id: Int!
   full_name: String!
   id: Int!
   last_name: String!
+  last_name_i18n: I18nString!
+  last_name_id: Int!
 }
 
 type Query {
+  i18n_string(id: Int!): I18nString
+  language(id: Int!): Language
   profile(id: Int!): Profile
+  translation(lang_id: Int!, string_id: Int!): Translation
+}
+
+type Translation {
+  language: Language!
+  language_id: Int!
+  string: I18nString!
+  string_id: Int!
+  value: String!
 }

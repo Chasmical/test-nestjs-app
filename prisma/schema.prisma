@@ -8,8 +8,54 @@ datasource db {
   provider = "postgresql"
 }
 
+model I18nString {
+  id           Int           @id @default(autoincrement())
+  translations Translation[]
+
+  // These fields generally should not be accessed, unless when comparing translation progress
+  profile_first_names Profile[]  @relation("Profile.first_name")
+  profile_last_names  Profile[]  @relation("Profile.last_name")
+  language_names      Language[]
+}
+
+model Language {
+  id              Int           @id @default(autoincrement())
+  ietf_tag        String        @unique
+  two_char_code   String?       @unique
+  three_char_code String?       @unique
+  name_i18n       I18nString    @relation(fields: [name_id], references: [id])
+  name_id         Int
+  translations    Translation[]
+}
+
+model Translation {
+  value String
+  string      I18nString @relation(fields: [string_id], references: [id])
+  string_id   Int
+  language    Language   @relation(fields: [language_id], references: [id])
+  language_id Int
+
+  @@id(fields: [string_id, language_id])
+}
+
 model Profile {
-  id         Int    @id @default(autoincrement())
-  first_name String
-  last_name  String
+  id Int @id @default(autoincrement())
+
+  first_name_i18n I18nString @relation("Profile.first_name", fields: [first_name_id], references: [id])
+  first_name_id   Int
+  last_name_i18n  I18nString @relation("Profile.last_name", fields: [last_name_id], references: [id])
+  last_name_id    Int
+}
+
+model Experience {
+  id Int @id @default(autoincrement())
+
+  company    Company @relation(fields: [company_id], references: [id])
+  company_id Int
+}
+
+model Company {
+  id          Int          @id @default(autoincrement())
+  name        String
+  experiences Experience[]
 }

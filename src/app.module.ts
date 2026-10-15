@@ -3,18 +3,22 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
 import { ApolloDriver, ApolloDriverConfig } from "@nestjs/apollo";
 import { Module } from "@nestjs/common";
 import { GraphQLModule } from "@nestjs/graphql";
+import { I18nModule } from "./modules/i18n/i18n.module.js";
 import { ProfilesModule } from "./modules/profiles/profiles.module.js";
 
 const defaultQuery = `query {
   profile(id: 123) {
     id
-    full_name
+
+    # Try changing "Accept-Language" header to "ru" or "en"
+    first_name last_name
   }
 }
 `;
 
 @Module({
   imports: [
+    I18nModule,
     ProfilesModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -23,6 +27,7 @@ const defaultQuery = `query {
       plugins: [
         ApolloServerPluginLandingPageLocalDefault({
           document: defaultQuery,
+          headers: { "Accept-Language": "en-US,en;q=0.9" },
         }),
       ],
       autoSchemaFile: join(process.cwd(), "src/@generated/schema.gql"),

@@ -59,3 +59,7 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 node_modules/
 dist/
+
+# Auto-generated Prisma client code files
+/src/@generated/prisma
+# schema.gql is kept, so that it's viewable in the repo
