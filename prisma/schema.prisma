@@ -46,16 +46,3 @@ model Profile {
   last_name_i18n  I18nString @relation("Profile.last_name", fields: [last_name_id], references: [id])
   last_name_id    Int
 }
-
-model Experience {
-  id Int @id @default(autoincrement())
-
-  company    Company @relation(fields: [company_id], references: [id])
-  company_id Int
-}
-
-model Company {
-  id          Int          @id @default(autoincrement())
-  name        String
-  experiences Experience[]
-}

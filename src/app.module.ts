@@ -34,6 +34,7 @@ const defaultQuery = `query {
       driver: ApolloDriver,
       graphiql: false,
       introspection: true,
+      includeStacktraceInErrorResponses: process.env.NODE_ENV !== "production",
       plugins: [
         ApolloServerPluginLandingPageLocalDefault({
           document: defaultQuery,

@@ -9,12 +9,22 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      # During first 10s check status every 1s
+      start_period: 10s
+      start_interval: 1s
+      # Then, check every 30s
+      interval: 30s
+      timeout: 30s
+      retries: 5
     restart: always
 
   backend:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/db
     ports:

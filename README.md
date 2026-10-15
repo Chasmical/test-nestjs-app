@@ -18,13 +18,13 @@ $ npm install
 $ docker compose up db -d
 
 # apply Prisma's schema to database and seed data
-$ npm run prisma:deploy
+$ npm run prisma:deploy && npm run prisma:seed
 
 # develop the backend locally
 $ npm run dev
 
-# create a Prisma migration from updated schema
-$ npm run prisma:dev
+# create and apply a Prisma migration from updated schema
+$ npm run prisma:migrate
 ```
 
 Apollo Sandbox: `http://localhost:3000/graphql`.
