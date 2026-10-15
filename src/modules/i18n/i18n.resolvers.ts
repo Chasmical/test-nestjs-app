@@ -8,16 +8,27 @@ import {
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
-import { I18nString, Language, Translation } from "./i18n.models.js";
+import { AnonTranslation, I18nString, Language, Translation } from "./i18n.models.js";
 import { I18nService } from "./i18n.service.js";
 
 @Resolver(Language)
 export class I18nLanguageResolver {
-  constructor(private readonly i18nService: I18nService) {}
+  private englishLangId$: Promise<number | null | undefined>;
+
+  constructor(private readonly i18nService: I18nService) {
+    // We're expecting the English language record to have the "en-US" IETF tag
+    this.englishLangId$ = this.i18nService
+      .findLanguageBy({ ietf_tag: "en-US" })
+      .then(lang => lang?.id);
+  }
 
   @Query(() => Language, { nullable: true })
   async language(@Args("id", { type: () => Int }) id: number): Promise<Language | null> {
     return this.i18nService.findLanguageBy({ id });
+  }
+  @Query(() => [Language], { nullable: true })
+  async languages(): Promise<Language[] | null> {
+    return this.i18nService.getAllLanguages();
   }
 
   @ResolveField(() => String)
@@ -26,6 +37,15 @@ export class I18nLanguageResolver {
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
     return this.i18nService.resolve(language.name_i18n, context);
+  }
+
+  @ResolveField(() => String)
+  async local_name(@Parent() language: Language): Promise<string> {
+    return this.i18nService.resolveWithId(language.name_i18n, language.id);
+  }
+  @ResolveField(() => String)
+  async english_name(@Parent() language: Language): Promise<string> {
+    return this.i18nService.resolveWithId(language.name_i18n, await this.englishLangId$);
   }
 }
 
@@ -58,5 +78,15 @@ export class I18nTranslationResolver {
   @ResolveField(() => I18nString)
   async string(@Parent() translation: Translation): Promise<I18nString> {
     return (await this.i18nService.findStringById(translation.language_id))!;
+  }
+}
+
+@Resolver(AnonTranslation)
+export class I18nAnonTranslationResolver {
+  constructor(private readonly i18nService: I18nService) {}
+
+  @ResolveField(() => Language)
+  async language(@Parent() translation: Translation): Promise<Language> {
+    return (await this.i18nService.findLanguageBy({ id: translation.language_id }))!;
   }
 }

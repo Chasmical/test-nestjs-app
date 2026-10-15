@@ -2,14 +2,26 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AnonI18nString {
+  translations: [AnonTranslation!]!
+}
+
+type AnonTranslation {
+  language: Language!
+  language_id: Int!
+  value: String!
+}
+
 type I18nString {
   id: Int!
   translations: [Translation!]!
 }
 
 type Language {
+  english_name: String!
   id: Int!
   ietf_tag: String!
+  local_name: String!
   name: String!
   name_i18n: I18nString!
   name_id: Int!
@@ -22,6 +34,7 @@ type Profile {
   first_name_i18n: I18nString!
   first_name_id: Int!
   full_name: String!
+  full_name_i18n: AnonI18nString!
   id: Int!
   last_name: String!
   last_name_i18n: I18nString!
@@ -31,6 +44,7 @@ type Profile {
 type Query {
   i18n_string(id: Int!): I18nString
   language(id: Int!): Language
+  languages: [Language!]
   profile(id: Int!): Profile
   translation(lang_id: Int!, string_id: Int!): Translation
 }

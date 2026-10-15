@@ -10,8 +10,18 @@ const defaultQuery = `query {
   profile(id: 123) {
     id
 
-    # Try changing "Accept-Language" header to "ru" or "en"
-    first_name last_name
+    # Try changing "Accept-Language" header to "ru" or "en" to see these fields change
+    first_name last_name full_name
+
+    full_name_i18n {
+      translations {
+        language { name }
+        value
+      }
+    }
+  }
+  languages {
+    ietf_tag english_name local_name
   }
 }
 `;

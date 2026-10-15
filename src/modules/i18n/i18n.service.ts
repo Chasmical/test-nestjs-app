@@ -2,7 +2,7 @@ import { IncomingMessage } from "node:http";
 import { ExecutionContext, Injectable } from "@nestjs/common";
 import acceptLanguageParser from "accept-language-parser";
 import { PrismaService } from "../../prisma/prisma.service.js";
-import { I18nString, Language, Translation } from "./i18n.models.js";
+import { AnonI18nString, I18nString, Language, Translation } from "./i18n.models.js";
 
 @Injectable()
 export class I18nService {
@@ -25,34 +25,55 @@ export class I18nService {
     return this.languages$;
   }
 
-  async resolve(string: I18nString, context: ExecutionContext): Promise<string> {
-    // Parse the "Accept-Language" header
-    let header = ((context as any).req as IncomingMessage).headers["accept-language"];
-    let accepts = acceptLanguageParser.parse(header);
-
-    // Get the languages that this string supports
+  async resolve(string: AnonI18nString, context: ExecutionContext): Promise<string> {
+    // Get all the languages that this string supports
     let allLanguages = await this.getAllLanguages();
     let available = string.translations.map(tr =>
       allLanguages.find(lang => lang.id === tr.language_id)!,
     );
 
-    // Pick a fitting language (or fall back to the first added translation - likely original)
-    let resolvedIetfTag = acceptLanguageParser.pick(
+    // Use the "Accept-Language" header to pick the most fitting language
+    let acceptLanguage = ((context as any).req as IncomingMessage).headers["accept-language"];
+    let resolvedTag = acceptLanguageParser.pick(
       available.map(x => x.ietf_tag),
-      accepts,
+      acceptLanguage ?? "",
     );
+    // Fall back to the first available translation
+    let resolvedLang = available.find(lang => lang.ietf_tag === resolvedTag) ?? available.at(0);
 
-    if (!resolvedIetfTag) {
+    if (!resolvedLang) {
       // TODO: This can only happen with a database that wasn't filled out correctly (I18nString
       // without any associated translations). Should the database not allow such state?
       return "";
     }
 
-    // Get the translation for the resolved language
-    let resolvedLangId = available.find(lang => lang.ietf_tag === resolvedIetfTag)!.id;
-    let translation = string.translations.find(tr => tr.language_id === resolvedLangId)!;
+    let translation = string.translations.find(tr => tr.language_id === resolvedLang.id)!;
 
     return translation.value;
+  }
+
+  resolveWithId(string: AnonI18nString, language_id: number | null | undefined): string {
+    let match = string.translations.find(tr => tr.language_id == language_id);
+    return (match ?? string.translations.at(0))?.value ?? "";
+  }
+
+  combineStrings(
+    left: AnonI18nString,
+    right: AnonI18nString,
+    combine: (a: string, b: string) => string,
+  ): AnonI18nString {
+    // Find all the different languages that we need to output
+    let langIds = new Set<number>();
+    left.translations.forEach(tr => langIds.add(tr.language_id));
+    right.translations.forEach(tr => langIds.add(tr.language_id));
+
+    // Combine individual translations
+    const translations = [...langIds].map(langId => {
+      let a = left.translations.find(tr => tr.language_id == langId) ?? left.translations.at(0);
+      let b = right.translations.find(tr => tr.language_id == langId) ?? right.translations.at(0);
+      return { language_id: langId, value: combine(a?.value ?? "", b?.value ?? "") };
+    });
+    return { translations };
   }
 
   async findLanguageBy(

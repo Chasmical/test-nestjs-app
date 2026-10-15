@@ -28,15 +28,25 @@ export class Language {
 
 @ObjectType()
 export class Translation {
-  @Field(() => String)
-  value: string;
-
-  @Field(() => I18nString)
-  string?: I18nString;
   @Field(() => Int)
   string_id: number;
-  @Field(() => Language)
-  language?: Language;
   @Field(() => Int)
   language_id: number;
+  @Field(() => String)
+  value: string;
+}
+
+// Anonymous I18nString and Translation, without assigned ids (used by profile().full_name_i18n)
+@ObjectType()
+export class AnonI18nString {
+  @Field(() => [AnonTranslation])
+  translations: AnonTranslation[];
+}
+
+@ObjectType()
+export class AnonTranslation {
+  @Field(() => Int)
+  language_id: number;
+  @Field(() => String)
+  value: string;
 }

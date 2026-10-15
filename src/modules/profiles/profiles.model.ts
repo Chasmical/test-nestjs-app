@@ -10,17 +10,8 @@ export class Profile {
   first_name_i18n: I18nString;
   @Field(() => Int)
   first_name_id: number;
-
   @Field(() => I18nString)
   last_name_i18n: I18nString;
   @Field(() => Int)
   last_name_id: number;
-
-  // Localized getters (depend on "Accept-Language" header)
-  @Field(() => String)
-  first_name?: string;
-  @Field(() => String)
-  last_name?: string;
-  @Field(() => String)
-  full_name?: string;
 }
