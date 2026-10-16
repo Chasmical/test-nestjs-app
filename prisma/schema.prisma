@@ -16,9 +16,10 @@ model I18nString {
   // These fields generally should not be accessed, unless when comparing translation progress
   language_names Language[]
 
-  profile_first_names Profile[]     @relation("Profile.first_name")
-  profile_last_names  Profile[]     @relation("Profile.last_name")
-  profile_links       ProfileLink[]
+  profile_first_names  Profile[]     @relation("Profile.first_name")
+  profile_last_names   Profile[]     @relation("Profile.last_name")
+  profile_descriptions Profile[]     @relation("Profile.description")
+  profile_links        ProfileLink[]
 
   company_names                 Company[]
   company_link_texts            CompanyLink[]
@@ -36,12 +37,10 @@ model I18nString {
 model Language {
   id Int @id @default(autoincrement())
 
-  ietf_tag        String        @unique
-  two_char_code   String?
-  three_char_code String?
-  name_i18n       I18nString    @relation(fields: [name_id], references: [id])
-  name_id         Int
-  translations    Translation[]
+  ietf_tag     String        @unique
+  name_i18n    I18nString    @relation(fields: [name_id], references: [id])
+  name_id      Int
+  translations Translation[]
 }
 
 model Translation {
@@ -57,10 +56,12 @@ model Translation {
 model Profile {
   id Int @id @default(autoincrement())
 
-  first_name_i18n I18nString @relation("Profile.first_name", fields: [first_name_id], references: [id])
-  first_name_id   Int
-  last_name_i18n  I18nString @relation("Profile.last_name", fields: [last_name_id], references: [id])
-  last_name_id    Int
+  first_name_i18n  I18nString @relation("Profile.first_name", fields: [first_name_id], references: [id])
+  first_name_id    Int
+  last_name_i18n   I18nString @relation("Profile.last_name", fields: [last_name_id], references: [id])
+  last_name_id     Int
+  description_i18n I18nString @relation("Profile.description", fields: [description_id], references: [id])
+  description_id   Int
 
   work_experiences    WorkExperience[]
   project_experiences ProjectExperience[]
@@ -159,14 +160,17 @@ model ProjectExperience {
   description_i18n I18nString @relation("ProjectExperience.description", fields: [description_id], references: [id])
   description_id   Int
 
+  started_at  DateTime
+  finished_at DateTime?
+
   achievements ProjectAchievement[]
 }
 
 model ProjectAchievement {
   id Int @id @default(autoincrement())
 
-  project          ProjectExperience @relation(fields: [project_id], references: [id])
-  project_id       Int
-  description_i18n I18nString        @relation(fields: [description_id], references: [id])
-  description_id   Int
+  project_experience    ProjectExperience @relation(fields: [project_experience_id], references: [id])
+  project_experience_id Int
+  description_i18n      I18nString        @relation(fields: [description_id], references: [id])
+  description_id        Int
 }

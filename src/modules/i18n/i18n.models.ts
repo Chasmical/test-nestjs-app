@@ -15,11 +15,6 @@ export class Language {
 
   @Field(() => String)
   ietf_tag: string;
-  @Field(() => String, { nullable: true })
-  two_char_code: string | null;
-  @Field(() => String, { nullable: true })
-  three_char_code: string | null;
-
   @Field(() => I18nString)
   name_i18n: I18nString;
   @Field(() => Int)

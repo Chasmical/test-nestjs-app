@@ -11,20 +11,25 @@ import { GraphQLComplexityPlugin } from "./plugins/graphql-complexity.plugin.js"
 
 const defaultQuery = `query {
   profile(id: 123) {
-    id
+    full_name description
+    links { text url }
 
-    # Try changing "Accept-Language" header to "ru" or "en" to see these fields change
-    first_name last_name full_name
-
-    full_name_i18n {
-      translations {
-        language { name }
-        value
+    work_experiences {
+      company {
+        id name
+        links { text url }
       }
+      title description started_at finished_at
+      achievements { description }
     }
-  }
-  languages {
-    ietf_tag english_name local_name
+    project_experiences {
+      project {
+        id name
+        links { text url }
+      }
+      title description started_at finished_at
+      achievements { description }
+    }
   }
 }
 `;

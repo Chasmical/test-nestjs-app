@@ -20,6 +20,11 @@ type CompanyLink {
   url: String!
 }
 
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type I18nString {
   id: Int!
   translations: [Translation!]!
@@ -34,11 +39,12 @@ type Language {
   name(lang: String): String!
   name_i18n: I18nString!
   name_id: Int!
-  three_char_code: String
-  two_char_code: String
 }
 
 type Profile {
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
   first_name(lang: String): String!
   first_name_i18n: I18nString!
   first_name_id: Int!
@@ -49,6 +55,8 @@ type Profile {
   last_name_i18n: I18nString!
   last_name_id: Int!
   links: [ProfileLink!]!
+  project_experiences: [ProjectExperience!]!
+  work_experiences: [WorkExperience!]!
 }
 
 type ProfileLink {
@@ -67,6 +75,31 @@ type Project {
   name(lang: String): String!
   name_i18n: I18nString!
   name_id: Int!
+}
+
+type ProjectAchievement {
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
+  id: Int!
+  project_experience_id: Int!
+}
+
+type ProjectExperience {
+  achievements: [ProjectAchievement!]!
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
+  finished_at: DateTime
+  id: Int!
+  profile: Profile!
+  profile_id: Int!
+  project: Project!
+  project_id: Int!
+  started_at: DateTime!
+  title(lang: String): String!
+  title_i18n: I18nString!
+  title_id: Int!
 }
 
 type ProjectLink {
@@ -105,4 +138,29 @@ type Translation {
   string: I18nString!
   string_id: Int!
   value: String!
+}
+
+type WorkAchievement {
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
+  id: Int!
+  work_experience_id: Int!
+}
+
+type WorkExperience {
+  achievements: [WorkAchievement!]!
+  company: Company!
+  company_id: Int!
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
+  finished_at: DateTime
+  id: Int!
+  profile: Profile!
+  profile_id: Int!
+  started_at: DateTime!
+  title(lang: String): String!
+  title_i18n: I18nString!
+  title_id: Int!
 }

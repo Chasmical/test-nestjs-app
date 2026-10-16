@@ -7,5 +7,6 @@ import { ProjectsService } from "./projects.service.js";
 @Module({
   imports: [PrismaModule, I18nModule],
   providers: [ProjectsService, ProjectsResolver, ProjectLinksResolver],
+  exports: [ProjectsService],
 })
 export class ProjectsModule {}

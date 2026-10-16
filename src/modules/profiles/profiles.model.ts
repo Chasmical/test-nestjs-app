@@ -14,6 +14,10 @@ export class Profile {
   last_name_i18n: I18nString;
   @Field(() => Int)
   last_name_id: number;
+  @Field(() => I18nString)
+  description_i18n: I18nString;
+  @Field(() => Int)
+  description_id: number;
 }
 
 @ObjectType()
@@ -99,7 +103,7 @@ export class ProjectAchievement {
   @Field(() => Int)
   id: number;
   @Field(() => Int)
-  project_id: number;
+  project_experience_id: number;
 
   @Field(() => I18nString)
   description_i18n: I18nString;
