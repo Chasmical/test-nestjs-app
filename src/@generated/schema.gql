@@ -12,6 +12,24 @@ type AnonTranslation {
   value: String!
 }
 
+type Company {
+  id: Int!
+  links: [CompanyLink!]!
+  name: String!
+  name_i18n: I18nString!
+  name_id: Int!
+}
+
+type CompanyLink {
+  company_id: Int!
+  id: Int!
+  order: Int!
+  text: String!
+  text_i18n: I18nString!
+  text_id: Int!
+  url: String!
+}
+
 type I18nString {
   id: Int!
   translations: [Translation!]!
@@ -39,13 +57,43 @@ type Profile {
   last_name: String!
   last_name_i18n: I18nString!
   last_name_id: Int!
+  links: [ProfileLink!]!
+}
+
+type ProfileLink {
+  id: Int!
+  order: Int!
+  profile_id: Int!
+  text: String!
+  text_i18n: I18nString!
+  text_id: Int!
+  url: String!
+}
+
+type Project {
+  id: Int!
+  links: [ProjectLink!]!
+  name: String!
+  name_i18n: I18nString!
+  name_id: Int!
+}
+
+type ProjectLink {
+  id: Int!
+  project_id: Int!
+  text: String!
+  text_i18n: I18nString!
+  text_id: Int!
+  url: String!
 }
 
 type Query {
+  company(id: Int!): Company
   i18n_string(id: Int!): I18nString
   language(id: Int!): Language
   languages: [Language!]
   profile(id: Int!): Profile
+  project(id: Int!): Project
   translation(lang_id: Int!, string_id: Int!): Translation
 }
 

@@ -10,7 +10,7 @@ import {
 } from "@nestjs/graphql";
 import { AnonI18nString } from "../i18n/i18n.models.js";
 import { I18nService } from "../i18n/i18n.service.js";
-import { Profile } from "./profiles.model.js";
+import { Profile, ProfileLink } from "./profiles.model.js";
 import { ProfilesService } from "./profiles.service.js";
 
 @Resolver(Profile)
@@ -56,5 +56,23 @@ export class ProfilesResolver {
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
     return this.i18nService.resolve(this.full_name_i18n(profile), context);
+  }
+
+  @ResolveField(() => [ProfileLink])
+  async links(@Parent() profile: Profile): Promise<ProfileLink[]> {
+    return this.profilesService.getProfileLinks(profile.id);
+  }
+}
+
+@Resolver(ProfileLink)
+export class ProfileLinksResolver {
+  constructor(private readonly i18n: I18nService) {}
+
+  @ResolveField(() => String)
+  async text(
+    @Parent() link: ProfileLink,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(link.text_i18n, context);
   }
 }

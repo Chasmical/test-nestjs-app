@@ -9,17 +9,33 @@ datasource db {
 }
 
 model I18nString {
-  id           Int           @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   translations Translation[]
 
   // These fields generally should not be accessed, unless when comparing translation progress
-  profile_first_names Profile[]  @relation("Profile.first_name")
-  profile_last_names  Profile[]  @relation("Profile.last_name")
-  language_names      Language[]
+  language_names Language[]
+
+  profile_first_names Profile[]     @relation("Profile.first_name")
+  profile_last_names  Profile[]     @relation("Profile.last_name")
+  profile_links       ProfileLink[]
+
+  company_names                 Company[]
+  company_link_texts            CompanyLink[]
+  work_experience_titles        WorkExperience[]  @relation("WorkExperience.title")
+  work_experience_descriptions  WorkExperience[]  @relation("WorkExperience.description")
+  work_achievement_descriptions WorkAchievement[]
+
+  project_names                    Project[]
+  project_link_texts               ProjectLink[]
+  project_experience_titles        ProjectExperience[]  @relation("ProjectExperience.title")
+  project_experience_descriptions  ProjectExperience[]  @relation("ProjectExperience.description")
+  project_achievement_descriptions ProjectAchievement[]
 }
 
 model Language {
-  id              Int           @id @default(autoincrement())
+  id Int @id @default(autoincrement())
+
   ietf_tag        String        @unique
   two_char_code   String?       @unique
   three_char_code String?       @unique
@@ -29,7 +45,7 @@ model Language {
 }
 
 model Translation {
-  value String
+  value       String
   string      I18nString @relation(fields: [string_id], references: [id])
   string_id   Int
   language    Language   @relation(fields: [language_id], references: [id])
@@ -45,4 +61,112 @@ model Profile {
   first_name_id   Int
   last_name_i18n  I18nString @relation("Profile.last_name", fields: [last_name_id], references: [id])
   last_name_id    Int
+
+  work_experiences    WorkExperience[]
+  project_experiences ProjectExperience[]
+  links               ProfileLink[]
+}
+
+model ProfileLink {
+  id Int @id @default(autoincrement())
+
+  profile    Profile    @relation(fields: [profile_id], references: [id])
+  profile_id Int
+  order      Int
+  text_i18n  I18nString @relation(fields: [text_id], references: [id])
+  text_id    Int
+  url        String
+}
+
+model Company {
+  id Int @id @default(autoincrement())
+
+  name_i18n I18nString @relation(fields: [name_id], references: [id])
+  name_id   Int
+
+  experiences WorkExperience[]
+  links       CompanyLink[]
+}
+
+model CompanyLink {
+  id Int @id @default(autoincrement())
+
+  company    Company    @relation(fields: [company_id], references: [id])
+  company_id Int
+  order      Int
+  text_i18n  I18nString @relation(fields: [text_id], references: [id])
+  text_id    Int
+  url        String
+}
+
+model WorkExperience {
+  id Int @id @default(autoincrement())
+
+  profile          Profile    @relation(fields: [profile_id], references: [id])
+  profile_id       Int
+  company          Company    @relation(fields: [company_id], references: [id])
+  company_id       Int
+  title_i18n       I18nString @relation("WorkExperience.title", fields: [title_id], references: [id])
+  title_id         Int
+  description_i18n I18nString @relation("WorkExperience.description", fields: [description_id], references: [id])
+  description_id   Int
+
+  started_at  DateTime
+  finished_at DateTime?
+
+  achievements WorkAchievement[]
+}
+
+model WorkAchievement {
+  id Int @id @default(autoincrement())
+
+  work_experience    WorkExperience @relation(fields: [work_experience_id], references: [id])
+  work_experience_id Int
+  description_i18n   I18nString     @relation(fields: [description_id], references: [id])
+  description_id     Int
+}
+
+model Project {
+  id Int @id @default(autoincrement())
+
+  name_i18n I18nString @relation(fields: [name_id], references: [id])
+  name_id   Int
+
+  experiences ProjectExperience[]
+  links       ProjectLink[]
+}
+
+model ProjectLink {
+  id Int @id @default(autoincrement())
+
+  project    Project    @relation(fields: [project_id], references: [id])
+  project_id Int
+  order      Int
+  text_i18n  I18nString @relation(fields: [text_id], references: [id])
+  text_id    Int
+  url        String
+}
+
+model ProjectExperience {
+  id Int @id @default(autoincrement())
+
+  profile          Profile    @relation(fields: [profile_id], references: [id])
+  profile_id       Int
+  project          Project    @relation(fields: [project_id], references: [id])
+  project_id       Int
+  title_i18n       I18nString @relation("ProjectExperience.title", fields: [title_id], references: [id])
+  title_id         Int
+  description_i18n I18nString @relation("ProjectExperience.description", fields: [description_id], references: [id])
+  description_id   Int
+
+  achievements ProjectAchievement[]
+}
+
+model ProjectAchievement {
+  id Int @id @default(autoincrement())
+
+  project          ProjectExperience @relation(fields: [project_id], references: [id])
+  project_id       Int
+  description_i18n I18nString        @relation(fields: [description_id], references: [id])
+  description_id   Int
 }

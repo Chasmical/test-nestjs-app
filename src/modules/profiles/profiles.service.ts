@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service.js";
-import { Profile } from "./profiles.model.js";
+import { Profile, ProfileLink } from "./profiles.model.js";
 
 @Injectable()
 export class ProfilesService {
@@ -14,5 +14,16 @@ export class ProfilesService {
         last_name_i18n: { include: { translations: true } },
       },
     });
+  }
+
+  async getProfileLinks(profile_id: number): Promise<ProfileLink[]> {
+    return this.prisma.profileLink
+      .findMany({
+        where: { profile_id },
+        include: {
+          text_i18n: { include: { translations: true } },
+        },
+      })
+      .then(links => links.sort((a, b) => a.order - b.order));
   }
 }
