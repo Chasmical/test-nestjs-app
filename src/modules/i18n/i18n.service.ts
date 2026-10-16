@@ -2,99 +2,114 @@ import { IncomingMessage } from "node:http";
 import { ExecutionContext, Injectable } from "@nestjs/common";
 import acceptLanguageParser from "accept-language-parser";
 import { PrismaService } from "../../prisma/prisma.service.js";
-import { AnonI18nString, I18nString, Language, Translation } from "./i18n.models.js";
+import { ThinI18nString, I18nString, Language, Translation } from "./i18n.models.js";
+
+export const INCLUDE_I18N = {
+  include: { translations: true },
+};
+export const INCLUDE_I18N_THIN = {
+  select: { translations: { select: { language_id: true, value: true } } },
+};
 
 @Injectable()
 export class I18nService {
-  // Languages are only loaded once, since they're not changed often
-  private languages: Language[] = [];
-  private languages$: Promise<Language[]>;
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(private readonly prisma: PrismaService) {
-    this.languages$ = this.reloadAllLanguages();
-  }
+  // Languages aren't usually changed, but are accessed often, so we'll cache them
+  private allLanguages$: Promise<Language[]>;
+  private englishLanguage$: Promise<Language | null>;
 
-  private async reloadAllLanguages() {
-    let languages = await this.prisma.language.findMany({
-      include: { name_i18n: { include: { translations: true } } },
-    });
-    this.languages = languages;
-    return languages;
-  }
   async getAllLanguages() {
-    return this.languages$;
+    return (this.allLanguages$ ??= this.prisma.language.findMany({
+      include: { name_i18n: INCLUDE_I18N },
+    }));
+  }
+  async getEnglish(): Promise<Language | null> {
+    return (this.englishLanguage$ ??= this.findLanguageByExact({ ietf_tag: "en-US" }));
   }
 
-  async resolve(string: AnonI18nString, context: ExecutionContext): Promise<string> {
-    // Get all the languages that this string supports
+  async findLanguageByExact(
+    where: { id: number } | { ietf_tag: string },
+  ): Promise<Language | null> {
     let allLanguages = await this.getAllLanguages();
-    let available = string.translations.map(tr =>
-      allLanguages.find(lang => lang.id === tr.language_id)!,
-    );
+    if ("id" in where && where.id != null) {
+      return allLanguages.find(x => x.id === where.id) ?? null;
+    } else {
+      return allLanguages.find(x => x.ietf_tag === (where as any).ietf_tag) ?? null;
+    }
+  }
 
-    // Use the "Accept-Language" header to pick the most fitting language
-    let acceptLanguage = ((context as any).req as IncomingMessage).headers["accept-language"];
+  resolveLanguage(
+    acceptLanguage: ExecutionContext | string | null | undefined,
+    available: Language[],
+  ): Language | null {
+    // If provided an ExecutionContext, extract the "Accept-Language" header from it
+    if (typeof acceptLanguage !== "string") {
+      let req = (acceptLanguage as any).req as IncomingMessage;
+      acceptLanguage = req.headers["accept-language"] ?? "";
+    }
+    // Otherwise, the provided string will be used as an "Accept-Language" value
+
     let resolvedTag = acceptLanguageParser.pick(
       available.map(x => x.ietf_tag),
       acceptLanguage ?? "",
     );
-    // Fall back to the first available translation
-    let resolvedLang = available.find(lang => lang.ietf_tag === resolvedTag) ?? available.at(0);
 
-    if (!resolvedLang) {
-      // TODO: This can only happen with a database that wasn't filled out correctly (I18nString
-      // without any associated translations). Should the database not allow such state?
-      return "";
-    }
-
-    let translation = string.translations.find(tr => tr.language_id === resolvedLang.id)!;
-
-    return translation.value;
+    // Get the language back from the resolved IETF tag
+    return available.find(lang => lang.ietf_tag === resolvedTag) ?? null;
   }
 
-  resolveWithId(string: AnonI18nString, language_id: number | null | undefined): string {
-    let match = string.translations.find(tr => tr.language_id == language_id);
-    return (match ?? string.translations.at(0))?.value ?? "";
+  resolve(string: ThinI18nString, language_id: number | null | undefined): string;
+  resolve(string: ThinI18nString, acceptLanguage: string): Promise<string>;
+  resolve(string: ThinI18nString, context: ExecutionContext): Promise<string>;
+  resolve(
+    string: ThinI18nString,
+    acceptLanguage: ExecutionContext | string | number | null | undefined,
+  ): Promise<string> | string;
+  resolve(
+    string: ThinI18nString,
+    acceptLanguage: ExecutionContext | string | number | null | undefined,
+  ): Promise<string> | string {
+    // If provided null or an id, return a translation with that language id
+    if (acceptLanguage == null || typeof acceptLanguage === "number") {
+      let match = string.translations.find(tr => tr.language_id === acceptLanguage);
+      return (match ?? string.translations.at(0))?.value ?? "";
+    }
+
+    return this.getAllLanguages().then(allLanguages => {
+      // Get all the languages that this string supports
+      let available = string.translations.map(tr =>
+        allLanguages.find(lang => lang.id === tr.language_id)!,
+      );
+      // Find the most fitting language, or fall back to the first translation
+      let lang = this.resolveLanguage(acceptLanguage, available) ?? available[0];
+      let translation = string.translations.find(tr => tr.language_id === lang.id);
+      return translation?.value ?? "";
+    });
   }
 
   combineStrings(
-    left: AnonI18nString,
-    right: AnonI18nString,
+    left: ThinI18nString,
+    right: ThinI18nString,
     combine: (a: string, b: string) => string,
-  ): AnonI18nString {
+  ): ThinI18nString {
     // Find all the different languages that we need to output
     let langIds = new Set<number>();
     left.translations.forEach(tr => langIds.add(tr.language_id));
     right.translations.forEach(tr => langIds.add(tr.language_id));
 
     // Combine individual translations
-    const translations = [...langIds].map(langId => {
-      let a = left.translations.find(tr => tr.language_id == langId) ?? left.translations.at(0);
-      let b = right.translations.find(tr => tr.language_id == langId) ?? right.translations.at(0);
-      return { language_id: langId, value: combine(a?.value ?? "", b?.value ?? "") };
-    });
+    const translations = [...langIds].map(langId => ({
+      language_id: langId,
+      value: combine(this.resolve(left, langId), this.resolve(right, langId)),
+    }));
     return { translations };
-  }
-
-  async findLanguageBy(
-    where:
-      | { id: number }
-      | { two_char_code: string }
-      | { three_char_code: string }
-      | { ietf_tag: string },
-  ): Promise<Language | null> {
-    return this.prisma.language.findUnique({
-      where,
-      include: {
-        name_i18n: { include: { translations: true } },
-      },
-    });
   }
 
   async findStringById(id: number): Promise<I18nString | null> {
     return this.prisma.i18nString.findUnique({
       where: { id },
-      include: { translations: true },
+      ...INCLUDE_I18N,
     });
   }
 

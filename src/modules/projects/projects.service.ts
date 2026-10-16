@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service.js";
+import { INCLUDE_I18N } from "../i18n/i18n.service.js";
 import { Project, ProjectLink } from "./projects.model.js";
 
 @Injectable()
@@ -10,7 +11,7 @@ export class ProjectsService {
     return this.prisma.project.findUnique({
       where: { id },
       include: {
-        name_i18n: { include: { translations: true } },
+        name_i18n: INCLUDE_I18N,
       },
     });
   }
@@ -19,9 +20,7 @@ export class ProjectsService {
     return this.prisma.projectLink
       .findMany({
         where: { project_id },
-        include: {
-          text_i18n: { include: { translations: true } },
-        },
+        include: { text_i18n: INCLUDE_I18N },
       })
       .then(links => links.sort((a, b) => a.order - b.order));
   }

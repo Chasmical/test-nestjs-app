@@ -37,8 +37,8 @@ model Language {
   id Int @id @default(autoincrement())
 
   ietf_tag        String        @unique
-  two_char_code   String?       @unique
-  three_char_code String?       @unique
+  two_char_code   String?
+  three_char_code String?
   name_i18n       I18nString    @relation(fields: [name_id], references: [id])
   name_id         Int
   translations    Translation[]

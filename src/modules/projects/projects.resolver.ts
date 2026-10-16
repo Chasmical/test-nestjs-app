@@ -25,8 +25,12 @@ export class ProjectsResolver {
   }
 
   @ResolveField(() => String)
-  async name(@Parent() project: Project, @Context() context: GqlExecutionContext): Promise<string> {
-    return this.i18n.resolve(project.name_i18n, context);
+  async name(
+    @Parent() project: Project,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(project.name_i18n, lang ?? context);
   }
   @ResolveField(() => [ProjectLink])
   async links(@Parent() project: Project): Promise<ProjectLink[]> {
@@ -41,8 +45,9 @@ export class ProjectLinksResolver {
   @ResolveField(() => String)
   async text(
     @Parent() link: ProjectLink,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(link.text_i18n, context);
+    return this.i18n.resolve(link.text_i18n, lang ?? context);
   }
 }

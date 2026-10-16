@@ -36,15 +36,17 @@ export class Translation {
   value: string;
 }
 
-// Anonymous I18nString and Translation, without assigned ids (used by profile().full_name_i18n)
+// Thin variants of I18nString and Translation, only with bare minimum required data,
+// that can be used to refer to strings/translations that don't have database rows:
+// { translations { language_id, value } }
 @ObjectType()
-export class AnonI18nString {
-  @Field(() => [AnonTranslation], { complexity: est => 10 * est.childComplexity })
-  translations: AnonTranslation[];
+export class ThinI18nString {
+  @Field(() => [ThinTranslation], { complexity: est => 10 * est.childComplexity })
+  translations: ThinTranslation[];
 }
 
 @ObjectType()
-export class AnonTranslation {
+export class ThinTranslation {
   @Field(() => Int)
   language_id: number;
   @Field(() => String)

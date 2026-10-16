@@ -2,20 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type AnonI18nString {
-  translations: [AnonTranslation!]!
-}
-
-type AnonTranslation {
-  language: Language!
-  language_id: Int!
-  value: String!
-}
-
 type Company {
   id: Int!
   links: [CompanyLink!]!
-  name: String!
+  name(lang: String): String!
   name_i18n: I18nString!
   name_id: Int!
 }
@@ -24,7 +14,7 @@ type CompanyLink {
   company_id: Int!
   id: Int!
   order: Int!
-  text: String!
+  text(lang: String): String!
   text_i18n: I18nString!
   text_id: Int!
   url: String!
@@ -33,6 +23,7 @@ type CompanyLink {
 type I18nString {
   id: Int!
   translations: [Translation!]!
+  value(lang: String): String!
 }
 
 type Language {
@@ -40,7 +31,7 @@ type Language {
   id: Int!
   ietf_tag: String!
   local_name: String!
-  name: String!
+  name(lang: String): String!
   name_i18n: I18nString!
   name_id: Int!
   three_char_code: String
@@ -48,13 +39,13 @@ type Language {
 }
 
 type Profile {
-  first_name: String!
+  first_name(lang: String): String!
   first_name_i18n: I18nString!
   first_name_id: Int!
-  full_name: String!
-  full_name_i18n: AnonI18nString!
+  full_name(lang: String): String!
+  full_name_i18n: ThinI18nString!
   id: Int!
-  last_name: String!
+  last_name(lang: String): String!
   last_name_i18n: I18nString!
   last_name_id: Int!
   links: [ProfileLink!]!
@@ -64,7 +55,7 @@ type ProfileLink {
   id: Int!
   order: Int!
   profile_id: Int!
-  text: String!
+  text(lang: String): String!
   text_i18n: I18nString!
   text_id: Int!
   url: String!
@@ -73,7 +64,7 @@ type ProfileLink {
 type Project {
   id: Int!
   links: [ProjectLink!]!
-  name: String!
+  name(lang: String): String!
   name_i18n: I18nString!
   name_id: Int!
 }
@@ -81,7 +72,7 @@ type Project {
 type ProjectLink {
   id: Int!
   project_id: Int!
-  text: String!
+  text(lang: String): String!
   text_i18n: I18nString!
   text_id: Int!
   url: String!
@@ -90,11 +81,22 @@ type ProjectLink {
 type Query {
   company(id: Int!): Company
   i18n_string(id: Int!): I18nString
-  language(id: Int!): Language
+  language(id: Int, lang: String): Language
   languages: [Language!]
   profile(id: Int!): Profile
   project(id: Int!): Project
   translation(lang_id: Int!, string_id: Int!): Translation
+}
+
+type ThinI18nString {
+  translations: [ThinTranslation!]!
+  value(lang: String): String!
+}
+
+type ThinTranslation {
+  language: Language!
+  language_id: Int!
+  value: String!
 }
 
 type Translation {

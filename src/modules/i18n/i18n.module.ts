@@ -1,9 +1,10 @@
 import { Module } from "@nestjs/common";
 import { PrismaModule } from "../../prisma/prisma.module.js";
 import {
-  I18nAnonTranslationResolver,
   I18nLanguageResolver,
   I18nStringResolver,
+  I18nThinStringResolver,
+  I18nThinTranslationResolver,
   I18nTranslationResolver,
 } from "./i18n.resolvers.js";
 import { I18nService } from "./i18n.service.js";
@@ -14,8 +15,9 @@ import { I18nService } from "./i18n.service.js";
     I18nService,
     I18nLanguageResolver,
     I18nStringResolver,
+    I18nThinStringResolver,
+    I18nThinTranslationResolver,
     I18nTranslationResolver,
-    I18nAnonTranslationResolver,
   ],
   exports: [I18nService],
 })

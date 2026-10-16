@@ -43,3 +43,35 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 -->
+
+## Some example queries
+
+```gql
+query {
+  profile(id: 123) {
+    # By default, localizable fields use "Accept-Language" header
+    full_name
+
+    # You can also specify languages explicitly (Accept-Language header syntax)
+    full_name_en: full_name(lang: "en-US,en-GB,en")
+    full_name_ru: full_name(lang: "ru")
+
+    # You can also access the I18nString value directly
+    full_name_i18n {
+      english: value(lang: "en-US,en")
+      russian: value(lang: "ru")
+
+      translations {
+        language {
+          # english_name and local_name are available here for convenience
+          id
+          english_name
+          local_name
+          russian_name: name(lang: "ru")
+        }
+        value
+      }
+    }
+  }
+}
+```
