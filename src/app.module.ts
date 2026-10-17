@@ -16,18 +16,18 @@ const defaultQuery = `query {
 
     work_experiences {
       company {
-        id name
+        id name description
         links { text url }
       }
-      title description started_at finished_at
+      title started_at finished_at
       achievements { description }
     }
     project_experiences {
       project {
-        id name
+        id name description
         links { text url }
       }
-      title description started_at finished_at
+      title started_at finished_at
       achievements { description }
     }
   }

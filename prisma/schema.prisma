@@ -21,16 +21,16 @@ model I18nString {
   profile_descriptions Profile[]     @relation("Profile.description")
   profile_links        ProfileLink[]
 
-  company_names                 Company[]
+  company_names                 Company[]         @relation("Company.name")
+  company_descriptions          Company[]         @relation("Company.description")
   company_link_texts            CompanyLink[]
   work_experience_titles        WorkExperience[]  @relation("WorkExperience.title")
-  work_experience_descriptions  WorkExperience[]  @relation("WorkExperience.description")
   work_achievement_descriptions WorkAchievement[]
 
-  project_names                    Project[]
+  project_names                    Project[] @relation("Project.name")
+  project_descriptions                    Project[] @relation("Project.description")
   project_link_texts               ProjectLink[]
   project_experience_titles        ProjectExperience[]  @relation("ProjectExperience.title")
-  project_experience_descriptions  ProjectExperience[]  @relation("ProjectExperience.description")
   project_achievement_descriptions ProjectAchievement[]
 }
 
@@ -82,8 +82,10 @@ model ProfileLink {
 model Company {
   id Int @id @default(autoincrement())
 
-  name_i18n I18nString @relation(fields: [name_id], references: [id])
-  name_id   Int
+  name_i18n        I18nString @relation("Company.name", fields: [name_id], references: [id])
+  name_id          Int
+  description_i18n I18nString @relation("Company.description", fields: [description_id], references: [id])
+  description_id   Int
 
   experiences WorkExperience[]
   links       CompanyLink[]
@@ -103,14 +105,12 @@ model CompanyLink {
 model WorkExperience {
   id Int @id @default(autoincrement())
 
-  profile          Profile    @relation(fields: [profile_id], references: [id])
-  profile_id       Int
-  company          Company    @relation(fields: [company_id], references: [id])
-  company_id       Int
-  title_i18n       I18nString @relation("WorkExperience.title", fields: [title_id], references: [id])
-  title_id         Int
-  description_i18n I18nString @relation("WorkExperience.description", fields: [description_id], references: [id])
-  description_id   Int
+  profile    Profile    @relation(fields: [profile_id], references: [id])
+  profile_id Int
+  company    Company    @relation(fields: [company_id], references: [id])
+  company_id Int
+  title_i18n I18nString @relation("WorkExperience.title", fields: [title_id], references: [id])
+  title_id   Int
 
   started_at  DateTime
   finished_at DateTime?
@@ -130,8 +130,10 @@ model WorkAchievement {
 model Project {
   id Int @id @default(autoincrement())
 
-  name_i18n I18nString @relation(fields: [name_id], references: [id])
-  name_id   Int
+  name_i18n        I18nString @relation("Project.name", fields: [name_id], references: [id])
+  name_id          Int
+  description_i18n I18nString @relation("Project.description", fields: [description_id], references: [id])
+  description_id   Int
 
   experiences ProjectExperience[]
   links       ProjectLink[]
@@ -151,14 +153,12 @@ model ProjectLink {
 model ProjectExperience {
   id Int @id @default(autoincrement())
 
-  profile          Profile    @relation(fields: [profile_id], references: [id])
-  profile_id       Int
-  project          Project    @relation(fields: [project_id], references: [id])
-  project_id       Int
-  title_i18n       I18nString @relation("ProjectExperience.title", fields: [title_id], references: [id])
-  title_id         Int
-  description_i18n I18nString @relation("ProjectExperience.description", fields: [description_id], references: [id])
-  description_id   Int
+  profile    Profile     @relation(fields: [profile_id], references: [id])
+  profile_id Int
+  project    Project     @relation(fields: [project_id], references: [id])
+  project_id Int
+  title_i18n I18nString? @relation("ProjectExperience.title", fields: [title_id], references: [id])
+  title_id   Int?
 
   started_at  DateTime
   finished_at DateTime?

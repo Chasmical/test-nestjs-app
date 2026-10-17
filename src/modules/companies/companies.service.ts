@@ -12,6 +12,7 @@ export class CompaniesService {
       where: { id },
       include: {
         name_i18n: INCLUDE_I18N,
+        description_i18n: INCLUDE_I18N,
       },
     });
   }

@@ -10,6 +10,10 @@ export class Project {
   name_i18n: I18nString;
   @Field(() => Int)
   name_id: number;
+  @Field(() => I18nString)
+  description_i18n: I18nString;
+  @Field(() => Int)
+  description_id: number;
 }
 
 @ObjectType()

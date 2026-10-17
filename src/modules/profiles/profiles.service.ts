@@ -37,26 +37,26 @@ export class ProfilesService {
   async getWorkExperiences(profile_id: number): Promise<WorkExperience[]> {
     return this.prisma.workExperience.findMany({
       where: { profile_id },
-      include: { title_i18n: INCLUDE_I18N, description_i18n: INCLUDE_I18N },
+      include: { title_i18n: INCLUDE_I18N },
     });
   }
   async getWorkAchievements(work_experience_id: number): Promise<WorkAchievement[]> {
     return this.prisma.workAchievement.findMany({
       where: { work_experience_id },
-      include: { title_i18n: INCLUDE_I18N, description_i18n: INCLUDE_I18N },
+      include: { description_i18n: INCLUDE_I18N },
     });
   }
 
   async getProjectExperiences(profile_id: number): Promise<ProjectExperience[]> {
     return this.prisma.projectExperience.findMany({
       where: { profile_id },
-      include: { title_i18n: INCLUDE_I18N, description_i18n: INCLUDE_I18N },
+      include: { title_i18n: INCLUDE_I18N },
     });
   }
   async getProjectAchievements(project_experience_id: number): Promise<ProjectAchievement[]> {
     return this.prisma.projectAchievement.findMany({
       where: { project_experience_id },
-      include: { title_i18n: INCLUDE_I18N, description_i18n: INCLUDE_I18N },
+      include: { description_i18n: INCLUDE_I18N },
     });
   }
 }

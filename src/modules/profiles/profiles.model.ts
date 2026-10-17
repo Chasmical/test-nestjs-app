@@ -50,10 +50,6 @@ export class WorkExperience {
   title_i18n: I18nString;
   @Field(() => Int)
   title_id: number;
-  @Field(() => I18nString)
-  description_i18n: I18nString;
-  @Field(() => Int)
-  description_id: number;
 
   @Field(() => Date)
   started_at: Date;
@@ -83,14 +79,10 @@ export class ProjectExperience {
   profile_id: number;
   @Field(() => Int)
   project_id: number;
-  @Field(() => I18nString)
-  title_i18n: I18nString;
-  @Field(() => Int)
-  title_id: number;
-  @Field(() => I18nString)
-  description_i18n: I18nString;
-  @Field(() => Int)
-  description_id: number;
+  @Field(() => I18nString, { nullable: true })
+  title_i18n: I18nString | null;
+  @Field(() => Int, { nullable: true })
+  title_id: number | null;
 
   @Field(() => Date)
   started_at: Date;

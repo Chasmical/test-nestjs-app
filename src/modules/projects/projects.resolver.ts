@@ -32,6 +32,14 @@ export class ProjectsResolver {
   ): Promise<string> {
     return this.i18n.resolve(project.name_i18n, lang ?? context);
   }
+  @ResolveField(() => String)
+  async description(
+    @Parent() project: Project,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(project.description_i18n, lang ?? context);
+  }
   @ResolveField(() => [ProjectLink])
   async links(@Parent() project: Project): Promise<ProjectLink[]> {
     return this.projectsService.getProjectLinks(project.id);

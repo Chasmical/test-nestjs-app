@@ -3,6 +3,9 @@
 # ------------------------------------------------------
 
 type Company {
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
   id: Int!
   links: [CompanyLink!]!
   name(lang: String): String!
@@ -70,6 +73,9 @@ type ProfileLink {
 }
 
 type Project {
+  description(lang: String): String!
+  description_i18n: I18nString!
+  description_id: Int!
   id: Int!
   links: [ProjectLink!]!
   name(lang: String): String!
@@ -87,9 +93,6 @@ type ProjectAchievement {
 
 type ProjectExperience {
   achievements: [ProjectAchievement!]!
-  description(lang: String): String!
-  description_i18n: I18nString!
-  description_id: Int!
   finished_at: DateTime
   id: Int!
   profile: Profile!
@@ -97,9 +100,9 @@ type ProjectExperience {
   project: Project!
   project_id: Int!
   started_at: DateTime!
-  title(lang: String): String!
-  title_i18n: I18nString!
-  title_id: Int!
+  title(lang: String): String
+  title_i18n: I18nString
+  title_id: Int
 }
 
 type ProjectLink {
@@ -152,9 +155,6 @@ type WorkExperience {
   achievements: [WorkAchievement!]!
   company: Company!
   company_id: Int!
-  description(lang: String): String!
-  description_i18n: I18nString!
-  description_id: Int!
   finished_at: DateTime
   id: Int!
   profile: Profile!

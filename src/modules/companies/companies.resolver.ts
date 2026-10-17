@@ -32,6 +32,14 @@ export class CompaniesResolver {
   ): Promise<string> {
     return this.i18n.resolve(company.name_i18n, lang ?? context);
   }
+  @ResolveField(() => String)
+  async description(
+    @Parent() company: Company,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(company.description_i18n, lang ?? context);
+  }
   @ResolveField(() => [CompanyLink])
   async links(@Parent() company: Company): Promise<CompanyLink[]> {
     return this.companiesService.getCompanyLinks(company.id);
