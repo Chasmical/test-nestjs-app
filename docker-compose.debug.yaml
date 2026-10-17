@@ -5,4 +5,4 @@ services:
   db:
     # Expose the database during development
     ports:
-     - "5432:5432"
+      - "5432:5432"
