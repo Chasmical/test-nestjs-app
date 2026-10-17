@@ -198,7 +198,7 @@ export class WorkSkillsResolver {
   ) {}
 
   @ResolveField(() => WorkExperience)
-  async project_experience(@Parent() skill: WorkSkill): Promise<WorkExperience> {
+  async work_experience(@Parent() skill: WorkSkill): Promise<WorkExperience> {
     return (await this.profilesService.findWorkExperienceById(skill.work_experience_id))!;
   }
   @ResolveField(() => Skill)

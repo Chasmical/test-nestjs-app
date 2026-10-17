@@ -185,9 +185,9 @@ type WorkExperience {
 }
 
 type WorkSkill {
-  project_experience: WorkExperience!
   skill: Skill!
   skill_id: Int!
   skill_name(lang: String): String!
+  work_experience: WorkExperience!
   work_experience_id: Int!
 }
