@@ -26,6 +26,35 @@ async function main() {
     { lang: ru, translation: "Русский" },
   ]);
 
+  // ========== Add skills ==========
+
+  let name_id = await i18nString(21, [{ lang: enUs, translation: "C#" }]);
+  let { id: csharpId } = await upsert(prisma.skill, { id: 1, name_id });
+
+  name_id = await i18nString(22, [{ lang: enUs, translation: ".NET" }]);
+  let { id: dotnetId } = await upsert(prisma.skill, { id: 2, name_id });
+
+  name_id = await i18nString(23, [{ lang: enUs, translation: "Unity" }]);
+  let { id: unityId } = await upsert(prisma.skill, { id: 3, name_id });
+
+  name_id = await i18nString(24, [{ lang: enUs, translation: "JavaScript/TypeScript" }]);
+  let { id: jsTsId } = await upsert(prisma.skill, { id: 4, name_id });
+
+  name_id = await i18nString(25, [{ lang: enUs, translation: "Rust" }]);
+  let { id: rustId } = await upsert(prisma.skill, { id: 5, name_id });
+
+  name_id = await i18nString(26, [{ lang: enUs, translation: "Angular" }]);
+  let { id: angularId } = await upsert(prisma.skill, { id: 6, name_id });
+
+  name_id = await i18nString(27, [{ lang: enUs, translation: "Next.js" }]);
+  let { id: nextJsId } = await upsert(prisma.skill, { id: 7, name_id });
+
+  name_id = await i18nString(28, [{ lang: enUs, translation: "React" }]);
+  let { id: reactId } = await upsert(prisma.skill, { id: 8, name_id });
+
+  name_id = await i18nString(29, [{ lang: enUs, translation: "HTML/CSS" }]);
+  let { id: htmlCssId } = await upsert(prisma.skill, { id: 9, name_id });
+
   // ========== Add profile info ==========
 
   let first_name_id = await i18nString(101, [
@@ -59,7 +88,7 @@ async function main() {
 
   // ========== Add company info ==========
 
-  let name_id = await i18nString(201, [
+  name_id = await i18nString(201, [
     { lang: enUs, translation: "RIT Automation LLC" },
     { lang: ru, translation: 'ООО "РИТ Автомейшен"' },
   ]);
@@ -90,6 +119,14 @@ async function main() {
     id: 1, profile_id, company_id, title_id,
     started_at: "2022-07-01T00:00:00Z", finished_at: "2024-06-01T00:00:00Z",
   });
+
+  for (const skill_id of [angularId, jsTsId, htmlCssId]) {
+    await prisma.workSkill.upsert({
+      where: { work_experience_id_skill_id: { work_experience_id, skill_id } },
+      update: {},
+      create: { work_experience_id, skill_id },
+    });
+  }
 
   // oxfmt-ignore
   description_id = await i18nString(253, [
@@ -131,6 +168,14 @@ async function main() {
     started_at: "2020-05-01T00:00:00Z", finished_at: "2024-02-01T00:00:00Z",
   });
 
+  for (const skill_id of [csharpId, dotnetId, unityId, reactId]) {
+    await prisma.projectSkill.upsert({
+      where: { project_experience_id_skill_id: { project_experience_id, skill_id } },
+      update: {},
+      create: { project_experience_id, skill_id },
+    });
+  }
+
   // oxfmt-ignore
   description_id = await i18nString(352, [
     { lang: enUs, translation: "Designed and implemented an extensive and easy to use modding API for the game." },
@@ -164,6 +209,14 @@ async function main() {
     started_at: "2023-03-01T00:00:00Z", finished_at: null,
   })).id;
 
+  for (const skill_id of [csharpId, dotnetId]) {
+    await prisma.projectSkill.upsert({
+      where: { project_experience_id_skill_id: { project_experience_id, skill_id } },
+      update: {},
+      create: { project_experience_id, skill_id },
+    });
+  }
+
   // oxfmt-ignore
   description_id = await i18nString(452, [
     { lang: enUs, translation: "Implemented high-performance, spec-compliant parsing and formatting of semantic versions and ranges, several times more performant and efficient than of any alternatives." },
@@ -189,6 +242,14 @@ async function main() {
     id: 3, profile_id, project_id,
     started_at: "2024-11-01T00:00:00Z", finished_at: null,
   })).id;
+
+  for (const skill_id of [rustId, csharpId]) {
+    await prisma.projectSkill.upsert({
+      where: { project_experience_id_skill_id: { project_experience_id, skill_id } },
+      update: {},
+      create: { project_experience_id, skill_id },
+    });
+  }
 
   // oxfmt-ignore
   description_id = await i18nString(552, [
@@ -216,6 +277,14 @@ async function main() {
     id: 4, profile_id, project_id,
     started_at: "2026-08-01T00:00:00Z", finished_at: null,
   })).id;
+
+  for (const skill_id of [rustId]) {
+    await prisma.projectSkill.upsert({
+      where: { project_experience_id_skill_id: { project_experience_id, skill_id } },
+      update: {},
+      create: { project_experience_id, skill_id },
+    });
+  }
 
   // oxfmt-ignore
   description_id = await i18nString(652, [

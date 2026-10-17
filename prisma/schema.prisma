@@ -16,6 +16,8 @@ model I18nString {
   // These fields generally should not be accessed, unless when comparing translation progress
   language_names Language[]
 
+  skill_names Skill[]
+
   profile_first_names  Profile[]     @relation("Profile.first_name")
   profile_last_names   Profile[]     @relation("Profile.last_name")
   profile_descriptions Profile[]     @relation("Profile.description")
@@ -27,8 +29,8 @@ model I18nString {
   work_experience_titles        WorkExperience[]  @relation("WorkExperience.title")
   work_achievement_descriptions WorkAchievement[]
 
-  project_names                    Project[] @relation("Project.name")
-  project_descriptions                    Project[] @relation("Project.description")
+  project_names                    Project[]            @relation("Project.name")
+  project_descriptions             Project[]            @relation("Project.description")
   project_link_texts               ProjectLink[]
   project_experience_titles        ProjectExperience[]  @relation("ProjectExperience.title")
   project_achievement_descriptions ProjectAchievement[]
@@ -51,6 +53,16 @@ model Translation {
   language_id Int
 
   @@id(fields: [string_id, language_id])
+}
+
+model Skill {
+  id Int @id @default(autoincrement())
+
+  name_i18n I18nString @relation(fields: [name_id], references: [id])
+  name_id   Int
+
+  work_skills    WorkSkill[]
+  project_skills ProjectSkill[]
 }
 
 model Profile {
@@ -115,7 +127,17 @@ model WorkExperience {
   started_at  DateTime
   finished_at DateTime?
 
+  skills       WorkSkill[]
   achievements WorkAchievement[]
+}
+
+model WorkSkill {
+  work_experience    WorkExperience @relation(fields: [work_experience_id], references: [id])
+  work_experience_id Int
+  skill              Skill          @relation(fields: [skill_id], references: [id])
+  skill_id           Int
+
+  @@id(fields: [work_experience_id, skill_id])
 }
 
 model WorkAchievement {
@@ -163,7 +185,17 @@ model ProjectExperience {
   started_at  DateTime
   finished_at DateTime?
 
+  skills       ProjectSkill[]
   achievements ProjectAchievement[]
+}
+
+model ProjectSkill {
+  project_experience    ProjectExperience @relation(fields: [project_experience_id], references: [id])
+  project_experience_id Int
+  skill                 Skill             @relation(fields: [skill_id], references: [id])
+  skill_id              Int
+
+  @@id(fields: [project_experience_id, skill_id])
 }
 
 model ProjectAchievement {

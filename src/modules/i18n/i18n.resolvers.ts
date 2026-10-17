@@ -27,7 +27,6 @@ export class I18nLanguageResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<Language | null> {
-    console.log(id, lang);
     if (id != null) {
       return this.i18n.findLanguageByExact({ id });
     } else {

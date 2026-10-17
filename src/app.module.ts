@@ -7,12 +7,16 @@ import { CompaniesModule } from "./modules/companies/companies.module.js";
 import { I18nModule } from "./modules/i18n/i18n.module.js";
 import { ProfilesModule } from "./modules/profiles/profiles.module.js";
 import { ProjectsModule } from "./modules/projects/projects.module.js";
+import { SkillsModule } from "./modules/skills/skills.module.js";
 import { GraphQLComplexityPlugin } from "./plugins/graphql-complexity.plugin.js";
 
 const defaultQuery = `query {
+  # Try changing the "Accept-Language" header to "ru" and "en"
+
   profile(id: 123) {
     full_name description
     links { text url }
+    skills { name }
 
     work_experiences {
       company {
@@ -20,6 +24,7 @@ const defaultQuery = `query {
         links { text url }
       }
       title started_at finished_at
+      skills { name: skill_name }
       achievements { description }
     }
     project_experiences {
@@ -28,6 +33,7 @@ const defaultQuery = `query {
         links { text url }
       }
       title started_at finished_at
+      skills { name: skill_name }
       achievements { description }
     }
   }
@@ -55,6 +61,7 @@ const defaultQuery = `query {
     ProfilesModule,
     CompaniesModule,
     ProjectsModule,
+    SkillsModule,
   ],
 })
 export class AppModule {}

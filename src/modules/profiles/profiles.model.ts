@@ -58,6 +58,14 @@ export class WorkExperience {
 }
 
 @ObjectType()
+export class WorkSkill {
+  @Field(() => Int)
+  work_experience_id: number;
+  @Field(() => Int)
+  skill_id: number;
+}
+
+@ObjectType()
 export class WorkAchievement {
   @Field(() => Int)
   id: number;
@@ -88,6 +96,14 @@ export class ProjectExperience {
   started_at: Date;
   @Field(() => Date, { nullable: true })
   finished_at: Date | null;
+}
+
+@ObjectType()
+export class ProjectSkill {
+  @Field(() => Int)
+  project_experience_id: number;
+  @Field(() => Int)
+  skill_id: number;
 }
 
 @ObjectType()

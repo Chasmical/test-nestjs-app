@@ -14,13 +14,17 @@ import { ThinI18nString } from "../i18n/i18n.models.js";
 import { I18nService } from "../i18n/i18n.service.js";
 import { Project } from "../projects/projects.model.js";
 import { ProjectsService } from "../projects/projects.service.js";
+import { Skill } from "../skills/skills.model.js";
+import { SkillsService } from "../skills/skills.service.js";
 import {
   Profile,
   ProfileLink,
   ProjectAchievement,
   ProjectExperience,
+  ProjectSkill,
   WorkAchievement,
   WorkExperience,
+  WorkSkill,
 } from "./profiles.model.js";
 import { ProfilesService } from "./profiles.service.js";
 
@@ -92,6 +96,11 @@ export class ProfilesResolver {
   async project_experiences(@Parent() profile: Profile): Promise<ProjectExperience[]> {
     return this.profilesService.getProjectExperiences(profile.id);
   }
+
+  @ResolveField(() => [Skill], { complexity: est => 10 * est.childComplexity })
+  async skills(@Parent() profile: Profile): Promise<Skill[]> {
+    return this.profilesService.getProfileSkills(profile.id);
+  }
 }
 
 @Resolver(ProfileLink)
@@ -134,23 +143,13 @@ export class WorkExperiencesResolver {
     return this.i18n.resolve(exp.title_i18n, lang ?? context);
   }
 
+  @ResolveField(() => [WorkSkill], { complexity: est => 10 * est.childComplexity })
+  async skills(@Parent() exp: WorkExperience): Promise<WorkSkill[]> {
+    return this.profilesService.getWorkSkills(exp.id);
+  }
   @ResolveField(() => [WorkAchievement], { complexity: est => 10 * est.childComplexity })
   async achievements(@Parent() exp: WorkExperience): Promise<WorkAchievement[]> {
     return this.profilesService.getWorkAchievements(exp.id);
-  }
-}
-
-@Resolver(WorkAchievement)
-export class WorkAchievementsResolver {
-  constructor(private readonly i18n: I18nService) {}
-
-  @ResolveField(() => String)
-  async description(
-    @Parent() achievement: WorkAchievement,
-    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
-    @Context() context: GqlExecutionContext,
-  ): Promise<string> {
-    return this.i18n.resolve(achievement.description_i18n, lang ?? context);
   }
 }
 
@@ -180,9 +179,79 @@ export class ProjectExperiencesResolver {
     return exp.title_i18n ? this.i18n.resolve(exp.title_i18n, lang ?? context) : null;
   }
 
+  @ResolveField(() => [ProjectSkill], { complexity: est => 10 * est.childComplexity })
+  async skills(@Parent() exp: ProjectExperience): Promise<ProjectSkill[]> {
+    return this.profilesService.getProjectSkills(exp.id);
+  }
   @ResolveField(() => [ProjectAchievement], { complexity: est => 10 * est.childComplexity })
   async achievements(@Parent() exp: ProjectExperience): Promise<ProjectAchievement[]> {
     return this.profilesService.getProjectAchievements(exp.id);
+  }
+}
+
+@Resolver(WorkSkill)
+export class WorkSkillsResolver {
+  constructor(
+    private readonly profilesService: ProfilesService,
+    private readonly skillsService: SkillsService,
+    private readonly i18n: I18nService,
+  ) {}
+
+  @ResolveField(() => WorkExperience)
+  async project_experience(@Parent() skill: WorkSkill): Promise<WorkExperience> {
+    return (await this.profilesService.findWorkExperienceById(skill.work_experience_id))!;
+  }
+  @ResolveField(() => Skill)
+  async skill(@Parent() skill: WorkSkill): Promise<Skill> {
+    return (await this.skillsService.findById(skill.skill_id))!;
+  }
+  @ResolveField(() => String)
+  async skill_name(
+    @Parent() skill: WorkSkill,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve((await this.skill(skill)).name_i18n, lang ?? context);
+  }
+}
+
+@Resolver(ProjectSkill)
+export class ProjectSkillsResolver {
+  constructor(
+    private readonly profilesService: ProfilesService,
+    private readonly skillsService: SkillsService,
+    private readonly i18n: I18nService,
+  ) {}
+
+  @ResolveField(() => ProjectExperience)
+  async project_experience(@Parent() exp: ProjectSkill): Promise<ProjectExperience> {
+    return (await this.profilesService.findProjectExperienceById(exp.project_experience_id))!;
+  }
+  @ResolveField(() => Skill)
+  async skill(@Parent() skill: ProjectSkill): Promise<Skill> {
+    return (await this.skillsService.findById(skill.skill_id))!;
+  }
+  @ResolveField(() => String)
+  async skill_name(
+    @Parent() skill: ProjectSkill,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve((await this.skill(skill)).name_i18n, lang ?? context);
+  }
+}
+
+@Resolver(WorkAchievement)
+export class WorkAchievementsResolver {
+  constructor(private readonly i18n: I18nService) {}
+
+  @ResolveField(() => String)
+  async description(
+    @Parent() achievement: WorkAchievement,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(achievement.description_i18n, lang ?? context);
   }
 }
 

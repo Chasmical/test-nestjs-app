@@ -59,6 +59,7 @@ type Profile {
   last_name_id: Int!
   links: [ProfileLink!]!
   project_experiences: [ProjectExperience!]!
+  skills: [Skill!]!
   work_experiences: [WorkExperience!]!
 }
 
@@ -99,6 +100,7 @@ type ProjectExperience {
   profile_id: Int!
   project: Project!
   project_id: Int!
+  skills: [ProjectSkill!]!
   started_at: DateTime!
   title(lang: String): String
   title_i18n: I18nString
@@ -114,6 +116,14 @@ type ProjectLink {
   url: String!
 }
 
+type ProjectSkill {
+  project_experience: ProjectExperience!
+  project_experience_id: Int!
+  skill: Skill!
+  skill_id: Int!
+  skill_name(lang: String): String!
+}
+
 type Query {
   company(id: Int!): Company
   i18n_string(id: Int!): I18nString
@@ -121,7 +131,15 @@ type Query {
   languages: [Language!]
   profile(id: Int!): Profile
   project(id: Int!): Project
+  skill(id: Int!): Skill
   translation(lang_id: Int!, string_id: Int!): Translation
+}
+
+type Skill {
+  id: Int!
+  name(lang: String): String!
+  name_i18n: I18nString!
+  name_id: Int!
 }
 
 type ThinI18nString {
@@ -159,8 +177,17 @@ type WorkExperience {
   id: Int!
   profile: Profile!
   profile_id: Int!
+  skills: [WorkSkill!]!
   started_at: DateTime!
   title(lang: String): String!
   title_i18n: I18nString!
   title_id: Int!
+}
+
+type WorkSkill {
+  project_experience: WorkExperience!
+  skill: Skill!
+  skill_id: Int!
+  skill_name(lang: String): String!
+  work_experience_id: Int!
 }

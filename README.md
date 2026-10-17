@@ -3,6 +3,7 @@
 ## Deploy the entire project with one Docker command
 
 ```bash
+# start the backend on 3333 port (database not exposed)
 $ docker compose up --build -d
 ```
 
@@ -14,13 +15,13 @@ Apollo Sandbox: `http://localhost:3333/graphql`.
 # install dependencies
 $ npm install
 
-# start the database container
-$ docker compose up db -d
+# start the database container in debug mode (exposed on 5432 port)
+$ docker compose -f docker-compose.debug.yaml up db -d
 
 # apply Prisma's schema to database and seed data
 $ npm run prisma:deploy && npm run prisma:seed
 
-# develop the backend locally
+# develop the backend locally (port 3000)
 $ npm run dev
 
 # create and apply a Prisma migration from updated schema
