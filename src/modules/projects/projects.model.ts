@@ -19,6 +19,8 @@ export class ProjectLink {
   project_id: number;
 
   @Field(() => Int)
+  order: number;
+  @Field(() => Int)
   text_id: number;
   @Field(() => String)
   url: string;

@@ -109,6 +109,7 @@ type ProjectExperience {
 
 type ProjectLink {
   id: Int!
+  order: Int!
   project_id: Int!
   text(lang: String): String!
   text_i18n: I18nString!

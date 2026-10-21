@@ -39,7 +39,7 @@ export class ProfilesResolver {
 
   @Query(() => Profile, { nullable: true })
   async profile(@Args("id", { type: () => Int }) id: number): Promise<Profile | null> {
-    return this.profilesService.findById(id);
+    return this.dataLoader.findById(this.profilesService.profiles, id);
   }
 
   @ResolveField(() => I18nString)
@@ -100,18 +100,19 @@ export class ProfilesResolver {
 
   @ResolveField(() => [ProfileLink], { complexity: est => 10 * est.childComplexity })
   async links(@Parent() profile: Profile): Promise<ProfileLink[]> {
-    return this.profilesService.getProfileLinks(profile.id);
+    return this.dataLoader.findById(this.profilesService.profileLinks, profile.id);
   }
   @ResolveField(() => [WorkExperience], { complexity: est => 10 * est.childComplexity })
   async work_experiences(@Parent() profile: Profile): Promise<WorkExperience[]> {
-    return this.profilesService.getWorkExperiences(profile.id);
+    return this.dataLoader.findById(this.profilesService.workExperiencesByProfile, profile.id);
   }
   @ResolveField(() => [ProjectExperience], { complexity: est => 10 * est.childComplexity })
   async project_experiences(@Parent() profile: Profile): Promise<ProjectExperience[]> {
-    return this.profilesService.getProjectExperiences(profile.id);
+    return this.dataLoader.findById(this.profilesService.projectExperiencesByProfile, profile.id);
   }
 
-  @ResolveField(() => [Skill], { complexity: est => 10 * est.childComplexity })
+  // TODO: this one is unbatched
+  @ResolveField(() => [Skill], { complexity: est => 100 + 10 * est.childComplexity })
   async skills(@Parent() profile: Profile): Promise<Skill[]> {
     return this.profilesService.getProfileSkills(profile.id);
   }
@@ -150,11 +151,11 @@ export class WorkExperiencesResolver {
 
   @ResolveField(() => Profile)
   async profile(@Parent() exp: WorkExperience): Promise<Profile> {
-    return (await this.profilesService.findById(exp.profile_id))!;
+    return (await this.dataLoader.findById(this.profilesService.profiles, exp.profile_id))!;
   }
   @ResolveField(() => Company)
   async company(@Parent() exp: WorkExperience): Promise<Company> {
-    return (await this.companiesService.findById(exp.company_id))!;
+    return (await this.dataLoader.findById(this.companiesService.companies, exp.company_id))!;
   }
 
   @ResolveField(() => I18nString)
@@ -173,11 +174,11 @@ export class WorkExperiencesResolver {
 
   @ResolveField(() => [WorkSkill], { complexity: est => 10 * est.childComplexity })
   async skills(@Parent() exp: WorkExperience): Promise<WorkSkill[]> {
-    return this.profilesService.getWorkSkills(exp.id);
+    return this.dataLoader.findById(this.profilesService.workSkills, exp.id);
   }
   @ResolveField(() => [WorkAchievement], { complexity: est => 10 * est.childComplexity })
   async achievements(@Parent() exp: WorkExperience): Promise<WorkAchievement[]> {
-    return this.profilesService.getWorkAchievements(exp.id);
+    return this.dataLoader.findById(this.profilesService.workAchievements, exp.id);
   }
 }
 
@@ -192,11 +193,11 @@ export class ProjectExperiencesResolver {
 
   @ResolveField(() => Profile)
   async profile(@Parent() exp: ProjectExperience): Promise<Profile> {
-    return (await this.profilesService.findById(exp.profile_id))!;
+    return (await this.dataLoader.findById(this.profilesService.profiles, exp.profile_id))!;
   }
   @ResolveField(() => Project)
   async project(@Parent() exp: ProjectExperience): Promise<Project> {
-    return (await this.projectsService.findById(exp.project_id))!;
+    return (await this.dataLoader.findById(this.projectsService.projects, exp.project_id))!;
   }
 
   @ResolveField(() => I18nString, { nullable: true })
@@ -215,11 +216,11 @@ export class ProjectExperiencesResolver {
 
   @ResolveField(() => [ProjectSkill], { complexity: est => 10 * est.childComplexity })
   async skills(@Parent() exp: ProjectExperience): Promise<ProjectSkill[]> {
-    return this.profilesService.getProjectSkills(exp.id);
+    return this.dataLoader.findById(this.profilesService.projectSkills, exp.id);
   }
   @ResolveField(() => [ProjectAchievement], { complexity: est => 10 * est.childComplexity })
   async achievements(@Parent() exp: ProjectExperience): Promise<ProjectAchievement[]> {
-    return this.profilesService.getProjectAchievements(exp.id);
+    return this.dataLoader.findById(this.profilesService.projectAchievements, exp.id);
   }
 }
 
@@ -234,11 +235,12 @@ export class WorkSkillsResolver {
 
   @ResolveField(() => WorkExperience)
   async work_experience(@Parent() skill: WorkSkill): Promise<WorkExperience> {
-    return (await this.profilesService.findWorkExperienceById(skill.work_experience_id))!;
+    const expsService = this.profilesService.workExperiences;
+    return (await this.dataLoader.findById(expsService, skill.work_experience_id))!;
   }
   @ResolveField(() => Skill)
   async skill(@Parent() skill: WorkSkill): Promise<Skill> {
-    return (await this.skillsService.findById(skill.skill_id))!;
+    return (await this.dataLoader.findById(this.skillsService.skills, skill.skill_id))!;
   }
   @ResolveField(() => String)
   async skill_name(
@@ -260,12 +262,13 @@ export class ProjectSkillsResolver {
   ) {}
 
   @ResolveField(() => ProjectExperience)
-  async project_experience(@Parent() exp: ProjectSkill): Promise<ProjectExperience> {
-    return (await this.profilesService.findProjectExperienceById(exp.project_experience_id))!;
+  async project_experience(@Parent() skill: ProjectSkill): Promise<ProjectExperience> {
+    const expsService = this.profilesService.projectExperiences;
+    return (await this.dataLoader.findById(expsService, skill.project_experience_id))!;
   }
   @ResolveField(() => Skill)
   async skill(@Parent() skill: ProjectSkill): Promise<Skill> {
-    return (await this.skillsService.findById(skill.skill_id))!;
+    return (await this.dataLoader.findById(this.skillsService.skills, skill.skill_id))!;
   }
   @ResolveField(() => String)
   async skill_name(

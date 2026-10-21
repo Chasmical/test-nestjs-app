@@ -24,7 +24,7 @@ export class ProjectsResolver {
 
   @Query(() => Project, { nullable: true })
   async project(@Args("id", { type: () => Int }) id: number): Promise<Project | null> {
-    return this.projectsService.findById(id);
+    return this.dataLoader.findById(this.projectsService.projects, id);
   }
 
   @ResolveField(() => I18nString)
@@ -55,7 +55,7 @@ export class ProjectsResolver {
 
   @ResolveField(() => [ProjectLink])
   async links(@Parent() project: Project): Promise<ProjectLink[]> {
-    return this.projectsService.getProjectLinks(project.id);
+    return this.dataLoader.findById(this.projectsService.projectLinks, project.id);
   }
 }
 

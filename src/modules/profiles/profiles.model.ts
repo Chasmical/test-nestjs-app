@@ -17,9 +17,9 @@ export class Profile {
 export class ProfileLink {
   @Field(() => Int)
   id: number;
-
   @Field(() => Int)
   profile_id: number;
+
   @Field(() => Int)
   order: number;
   @Field(() => Int)

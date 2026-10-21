@@ -24,7 +24,7 @@ export class CompaniesResolver {
 
   @Query(() => Company, { nullable: true })
   async company(@Args("id", { type: () => Int }) id: number): Promise<Company | null> {
-    return this.companiesService.findById(id);
+    return this.dataLoader.findById(this.companiesService.companies, id);
   }
 
   @ResolveField(() => I18nString)
@@ -52,9 +52,10 @@ export class CompaniesResolver {
   ): Promise<string> {
     return this.dataLoader.resolve(this.i18n, company.description_id, lang ?? context);
   }
+
   @ResolveField(() => [CompanyLink])
   async links(@Parent() company: Company): Promise<CompanyLink[]> {
-    return this.companiesService.getCompanyLinks(company.id);
+    return this.dataLoader.findById(this.companiesService.companyLinks, company.id);
   }
 }
 

@@ -24,7 +24,7 @@ export class SkillsResolver {
 
   @Query(() => Skill, { nullable: true })
   async skill(@Args("id", { type: () => Int }) id: number): Promise<Skill | null> {
-    return this.skillsService.findById(id);
+    return this.dataLoader.findById(this.skillsService.skills, id);
   }
 
   @ResolveField(() => I18nString)

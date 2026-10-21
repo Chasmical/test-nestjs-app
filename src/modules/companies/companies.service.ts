@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { BatchableService } from "../../prisma/dataloader.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 import { Company, CompanyLink } from "./companies.model.js";
 
@@ -6,13 +7,17 @@ import { Company, CompanyLink } from "./companies.model.js";
 export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(id: number): Promise<Company | null> {
-    return this.prisma.company.findUnique({ where: { id } });
-  }
+  companies: BatchableService<number, Company | null> = {
+    createLoader: opt => this.prisma.createLoaderById("company", opt),
+  };
+  companyLinks: BatchableService<number, CompanyLink[]> = {
+    createLoader: opt => this.prisma.createLoaderByRelation("companyLink", "company_id", opt),
+  };
 
+  async findById(id: number): Promise<Company | null> {
+    return this.companies.createLoader({ batch: false }).load(id);
+  }
   async getCompanyLinks(company_id: number): Promise<CompanyLink[]> {
-    return this.prisma.companyLink
-      .findMany({ where: { company_id } })
-      .then(links => links.sort((a, b) => a.order - b.order));
+    return this.companyLinks.createLoader({ batch: false }).load(company_id);
   }
 }

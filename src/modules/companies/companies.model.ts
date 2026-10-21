@@ -15,9 +15,9 @@ export class Company {
 export class CompanyLink {
   @Field(() => Int)
   id: number;
-
   @Field(() => Int)
   company_id: number;
+
   @Field(() => Int)
   order: number;
   @Field(() => Int)
