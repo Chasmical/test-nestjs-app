@@ -132,7 +132,6 @@ type Query {
   profile(id: Int!): Profile
   project(id: Int!): Project
   skill(id: Int!): Skill
-  translation(lang_id: Int!, string_id: Int!): Translation
 }
 
 type Skill {

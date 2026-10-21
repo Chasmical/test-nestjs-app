@@ -1,21 +1,14 @@
 import { Field, ObjectType, Int } from "@nestjs/graphql";
-import { I18nString } from "../i18n/i18n.models.js";
 
 @ObjectType()
 export class Profile {
   @Field(() => Int)
   id: number;
 
-  @Field(() => I18nString)
-  first_name_i18n: I18nString;
   @Field(() => Int)
   first_name_id: number;
-  @Field(() => I18nString)
-  last_name_i18n: I18nString;
   @Field(() => Int)
   last_name_id: number;
-  @Field(() => I18nString)
-  description_i18n: I18nString;
   @Field(() => Int)
   description_id: number;
 }
@@ -29,8 +22,6 @@ export class ProfileLink {
   profile_id: number;
   @Field(() => Int)
   order: number;
-  @Field(() => I18nString)
-  text_i18n: I18nString;
   @Field(() => Int)
   text_id: number;
   @Field(() => String)
@@ -46,8 +37,6 @@ export class WorkExperience {
   profile_id: number;
   @Field(() => Int)
   company_id: number;
-  @Field(() => I18nString)
-  title_i18n: I18nString;
   @Field(() => Int)
   title_id: number;
 
@@ -71,9 +60,6 @@ export class WorkAchievement {
   id: number;
   @Field(() => Int)
   work_experience_id: number;
-
-  @Field(() => I18nString)
-  description_i18n: I18nString;
   @Field(() => Int)
   description_id: number;
 }
@@ -87,8 +73,6 @@ export class ProjectExperience {
   profile_id: number;
   @Field(() => Int)
   project_id: number;
-  @Field(() => I18nString, { nullable: true })
-  title_i18n: I18nString | null;
   @Field(() => Int, { nullable: true })
   title_id: number | null;
 
@@ -112,9 +96,6 @@ export class ProjectAchievement {
   id: number;
   @Field(() => Int)
   project_experience_id: number;
-
-  @Field(() => I18nString)
-  description_i18n: I18nString;
   @Field(() => Int)
   description_id: number;
 }

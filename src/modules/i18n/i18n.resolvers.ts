@@ -8,6 +8,7 @@ import {
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
+import { DataLoaderService } from "../../prisma/dataloader.service.js";
 import {
   ThinTranslation,
   I18nString,
@@ -19,7 +20,10 @@ import { I18nService } from "./i18n.service.js";
 
 @Resolver(Language)
 export class I18nLanguageResolver {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly dataLoader: DataLoaderService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @Query(() => Language, { nullable: true })
   async language(
@@ -28,7 +32,7 @@ export class I18nLanguageResolver {
     @Context() context: GqlExecutionContext,
   ): Promise<Language | null> {
     if (id != null) {
-      return this.i18n.findLanguageByExact({ id });
+      return this.dataLoader.findById(this.i18n.languages, id);
     } else {
       let allLanguages = await this.i18n.getAllLanguages();
       return this.i18n.resolveLanguage(lang ?? context, allLanguages);
@@ -39,22 +43,29 @@ export class I18nLanguageResolver {
     return this.i18n.getAllLanguages();
   }
 
+  @ResolveField(() => I18nString)
+  async name_i18n(@Parent() language: Language): Promise<I18nString> {
+    // Note: I18nString doesn't have any fields and is only used transiently
+    // return (await this.i18n.findStringById(language.name_id))!;
+    return { id: language.name_id };
+  }
+
   @ResolveField(() => String)
   async name(
     @Parent() language: Language,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(language.name_i18n, lang ?? context);
+    return this.i18n.resolve(language.name_id, lang ?? context);
   }
 
   @ResolveField(() => String)
   async local_name(@Parent() language: Language): Promise<string> {
-    return this.i18n.resolve(language.name_i18n, language.id);
+    return this.i18n.resolve(language.name_id, language.id);
   }
   @ResolveField(() => String)
   async english_name(@Parent() language: Language): Promise<string> {
-    return this.i18n.resolve(language.name_i18n, (await this.i18n.getEnglish())?.id);
+    return this.i18n.resolve(language.name_id, (await this.i18n.getEnglish())?.id);
   }
 }
 
@@ -67,13 +78,18 @@ export class I18nStringResolver {
     return this.i18n.findStringById(id);
   }
 
+  @ResolveField(() => [Translation], { complexity: est => 10 * est.childComplexity })
+  async translations(@Parent() i18nString: I18nString): Promise<Translation[]> {
+    return this.i18n.findTranslationsByStringId(i18nString.id);
+  }
+
   @ResolveField(() => String)
   async value(
     @Parent() i18nString: I18nString,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(i18nString, lang ?? context);
+    return this.i18n.resolve(i18nString.id, lang ?? context);
   }
 }
 
@@ -87,7 +103,7 @@ export class I18nThinStringResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(thinI18nString, lang ?? context);
+    return this.i18n.resolveTranslation(thinI18nString.translations, lang ?? context);
   }
 }
 
@@ -95,21 +111,13 @@ export class I18nThinStringResolver {
 export class I18nTranslationResolver {
   constructor(private readonly i18n: I18nService) {}
 
-  @Query(() => Translation, { nullable: true })
-  async translation(
-    @Args("string_id", { type: () => Int }) string_id: number,
-    @Args("lang_id", { type: () => Int }) lang_id: number,
-  ): Promise<Translation | null> {
-    return this.i18n.findTranslationById(string_id, lang_id);
-  }
-
-  @ResolveField(() => Language)
-  async language(@Parent() translation: Translation): Promise<Language> {
-    return (await this.i18n.findLanguageByExact({ id: translation.language_id }))!;
-  }
   @ResolveField(() => I18nString)
   async string(@Parent() translation: Translation): Promise<I18nString> {
     return (await this.i18n.findStringById(translation.language_id))!;
+  }
+  @ResolveField(() => Language)
+  async language(@Parent() translation: Translation): Promise<Language> {
+    return (await this.i18n.findLanguageById(translation.language_id))!;
   }
 }
 
@@ -119,6 +127,6 @@ export class I18nThinTranslationResolver {
 
   @ResolveField(() => Language)
   async language(@Parent() translation: ThinTranslation): Promise<Language> {
-    return (await this.i18n.findLanguageByExact({ id: translation.language_id }))!;
+    return (await this.i18n.findLanguageById(translation.language_id))!;
   }
 }

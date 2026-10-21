@@ -4,19 +4,14 @@ import { Field, ObjectType, Int } from "@nestjs/graphql";
 export class I18nString {
   @Field(() => Int)
   id: number;
-  @Field(() => [Translation], { complexity: est => 10 * est.childComplexity })
-  translations: Translation[];
 }
 
 @ObjectType()
 export class Language {
   @Field(() => Int)
   id: number;
-
   @Field(() => String)
   ietf_tag: string;
-  @Field(() => I18nString)
-  name_i18n: I18nString;
   @Field(() => Int)
   name_id: number;
 }

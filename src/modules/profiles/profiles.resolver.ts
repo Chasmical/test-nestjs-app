@@ -10,7 +10,7 @@ import {
 } from "@nestjs/graphql";
 import { Company } from "../companies/companies.model.js";
 import { CompaniesService } from "../companies/companies.service.js";
-import { ThinI18nString } from "../i18n/i18n.models.js";
+import { I18nString, ThinI18nString } from "../i18n/i18n.models.js";
 import { I18nService } from "../i18n/i18n.service.js";
 import { Project } from "../projects/projects.model.js";
 import { ProjectsService } from "../projects/projects.service.js";
@@ -40,29 +40,49 @@ export class ProfilesResolver {
     return this.profilesService.findById(id);
   }
 
+  @ResolveField(() => I18nString)
+  async first_name_i18n(@Parent() profile: Profile): Promise<I18nString> {
+    return (await this.i18n.findStringById(profile.first_name_id))!;
+  }
+  @ResolveField(() => I18nString)
+  async last_name_i18n(@Parent() profile: Profile): Promise<I18nString> {
+    return (await this.i18n.findStringById(profile.last_name_id))!;
+  }
+  @ResolveField(() => I18nString)
+  async description_i18n(@Parent() profile: Profile): Promise<I18nString> {
+    return (await this.i18n.findStringById(profile.description_id))!;
+  }
+
   @ResolveField(() => String)
   async first_name(
     @Parent() profile: Profile,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(profile.first_name_i18n, lang ?? context);
+    return this.i18n.resolve(profile.first_name_id, lang ?? context);
   }
-
   @ResolveField(() => String)
   async last_name(
     @Parent() profile: Profile,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(profile.last_name_i18n, lang ?? context);
+    return this.i18n.resolve(profile.last_name_id, lang ?? context);
+  }
+  @ResolveField(() => String)
+  async description(
+    @Parent() profile: Profile,
+    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
+    @Context() context: GqlExecutionContext,
+  ): Promise<string> {
+    return this.i18n.resolve(profile.description_id, lang ?? context);
   }
 
   @ResolveField(() => ThinI18nString)
-  full_name_i18n(@Parent() profile: Profile): ThinI18nString {
+  async full_name_i18n(@Parent() profile: Profile): Promise<ThinI18nString> {
     return this.i18n.combineStrings(
-      profile.first_name_i18n,
-      profile.last_name_i18n,
+      await this.i18n.findTranslationsByStringId(profile.first_name_id),
+      await this.i18n.findTranslationsByStringId(profile.first_name_id),
       (first_name, last_name) => `${first_name} ${last_name}`,
     );
   }
@@ -72,16 +92,8 @@ export class ProfilesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(this.full_name_i18n(profile), lang ?? context);
-  }
-
-  @ResolveField(() => String)
-  async description(
-    @Parent() profile: Profile,
-    @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
-    @Context() context: GqlExecutionContext,
-  ): Promise<string> {
-    return this.i18n.resolve(profile.description_i18n, lang ?? context);
+    let translations = (await this.full_name_i18n(profile)).translations;
+    return this.i18n.resolveTranslation(translations, lang ?? context);
   }
 
   @ResolveField(() => [ProfileLink], { complexity: est => 10 * est.childComplexity })
@@ -107,13 +119,18 @@ export class ProfilesResolver {
 export class ProfileLinksResolver {
   constructor(private readonly i18n: I18nService) {}
 
+  @ResolveField(() => I18nString)
+  async text_i18n(@Parent() link: ProfileLink): Promise<I18nString> {
+    return (await this.i18n.findStringById(link.text_id))!;
+  }
+
   @ResolveField(() => String)
   async text(
     @Parent() link: ProfileLink,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(link.text_i18n, lang ?? context);
+    return this.i18n.resolve(link.text_id, lang ?? context);
   }
 }
 
@@ -134,13 +151,18 @@ export class WorkExperiencesResolver {
     return (await this.companiesService.findById(exp.company_id))!;
   }
 
+  @ResolveField(() => I18nString)
+  async title_i18n(@Parent() exp: WorkExperience): Promise<I18nString> {
+    return (await this.i18n.findStringById(exp.title_id))!;
+  }
+
   @ResolveField(() => String)
   async title(
     @Parent() exp: WorkExperience,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(exp.title_i18n, lang ?? context);
+    return this.i18n.resolve(exp.title_id, lang ?? context);
   }
 
   @ResolveField(() => [WorkSkill], { complexity: est => 10 * est.childComplexity })
@@ -170,13 +192,18 @@ export class ProjectExperiencesResolver {
     return (await this.projectsService.findById(exp.project_id))!;
   }
 
+  @ResolveField(() => I18nString, { nullable: true })
+  async title_i18n(@Parent() exp: ProjectExperience): Promise<I18nString | null> {
+    return exp.title_id ? (await this.i18n.findStringById(exp.title_id))! : null;
+  }
+
   @ResolveField(() => String, { nullable: true })
   async title(
     @Parent() exp: ProjectExperience,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string | null> {
-    return exp.title_i18n ? this.i18n.resolve(exp.title_i18n, lang ?? context) : null;
+    return exp.title_id ? this.i18n.resolve(exp.title_id, lang ?? context) : null;
   }
 
   @ResolveField(() => [ProjectSkill], { complexity: est => 10 * est.childComplexity })
@@ -211,7 +238,7 @@ export class WorkSkillsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve((await this.skill(skill)).name_i18n, lang ?? context);
+    return this.i18n.resolve((await this.skill(skill)).name_id, lang ?? context);
   }
 }
 
@@ -237,7 +264,7 @@ export class ProjectSkillsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve((await this.skill(skill)).name_i18n, lang ?? context);
+    return this.i18n.resolve((await this.skill(skill)).name_id, lang ?? context);
   }
 }
 
@@ -245,13 +272,18 @@ export class ProjectSkillsResolver {
 export class WorkAchievementsResolver {
   constructor(private readonly i18n: I18nService) {}
 
+  @ResolveField(() => I18nString)
+  async description_i18n(@Parent() achievement: WorkAchievement): Promise<I18nString> {
+    return (await this.i18n.findStringById(achievement.description_id))!;
+  }
+
   @ResolveField(() => String)
   async description(
     @Parent() achievement: WorkAchievement,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(achievement.description_i18n, lang ?? context);
+    return this.i18n.resolve(achievement.description_id, lang ?? context);
   }
 }
 
@@ -259,12 +291,17 @@ export class WorkAchievementsResolver {
 export class ProjectAchievementsResolver {
   constructor(private readonly i18n: I18nService) {}
 
+  @ResolveField(() => I18nString)
+  async description_i18n(@Parent() achievement: WorkAchievement): Promise<I18nString> {
+    return (await this.i18n.findStringById(achievement.description_id))!;
+  }
+
   @ResolveField(() => String)
   async description(
     @Parent() achievement: ProjectAchievement,
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(achievement.description_i18n, lang ?? context);
+    return this.i18n.resolve(achievement.description_id, lang ?? context);
   }
 }
