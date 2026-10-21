@@ -8,6 +8,7 @@ import {
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
+import { DataLoaderService } from "../../prisma/dataloader.service.js";
 import { I18nString } from "../i18n/i18n.models.js";
 import { I18nService } from "../i18n/i18n.service.js";
 import { Company, CompanyLink } from "./companies.model.js";
@@ -16,6 +17,7 @@ import { CompaniesService } from "./companies.service.js";
 @Resolver(Company)
 export class CompaniesResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly companiesService: CompaniesService,
     private readonly i18n: I18nService,
   ) {}
@@ -27,11 +29,11 @@ export class CompaniesResolver {
 
   @ResolveField(() => I18nString)
   async name_i18n(@Parent() company: Company): Promise<I18nString> {
-    return (await this.i18n.findStringById(company.name_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, company.name_id))!;
   }
   @ResolveField(() => I18nString)
   async description_i18n(@Parent() company: Company): Promise<I18nString> {
-    return (await this.i18n.findStringById(company.description_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, company.description_id))!;
   }
 
   @ResolveField(() => String)
@@ -40,7 +42,7 @@ export class CompaniesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(company.name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, company.name_id, lang ?? context);
   }
   @ResolveField(() => String)
   async description(
@@ -48,7 +50,7 @@ export class CompaniesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(company.description_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, company.description_id, lang ?? context);
   }
   @ResolveField(() => [CompanyLink])
   async links(@Parent() company: Company): Promise<CompanyLink[]> {
@@ -58,11 +60,14 @@ export class CompaniesResolver {
 
 @Resolver(CompanyLink)
 export class CompanyLinksResolver {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly dataLoader: DataLoaderService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @ResolveField(() => I18nString)
   async text_i18n(@Parent() link: CompanyLink): Promise<I18nString> {
-    return (await this.i18n.findStringById(link.text_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, link.text_id))!;
   }
 
   @ResolveField(() => String)
@@ -71,6 +76,6 @@ export class CompanyLinksResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(link.text_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, link.text_id, lang ?? context);
   }
 }

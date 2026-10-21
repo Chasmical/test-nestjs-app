@@ -8,6 +8,7 @@ import {
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
+import { DataLoaderService } from "../../prisma/dataloader.service.js";
 import { Company } from "../companies/companies.model.js";
 import { CompaniesService } from "../companies/companies.service.js";
 import { I18nString, ThinI18nString } from "../i18n/i18n.models.js";
@@ -31,6 +32,7 @@ import { ProfilesService } from "./profiles.service.js";
 @Resolver(Profile)
 export class ProfilesResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly profilesService: ProfilesService,
     private readonly i18n: I18nService,
   ) {}
@@ -42,15 +44,15 @@ export class ProfilesResolver {
 
   @ResolveField(() => I18nString)
   async first_name_i18n(@Parent() profile: Profile): Promise<I18nString> {
-    return (await this.i18n.findStringById(profile.first_name_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, profile.first_name_id))!;
   }
   @ResolveField(() => I18nString)
   async last_name_i18n(@Parent() profile: Profile): Promise<I18nString> {
-    return (await this.i18n.findStringById(profile.last_name_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, profile.last_name_id))!;
   }
   @ResolveField(() => I18nString)
   async description_i18n(@Parent() profile: Profile): Promise<I18nString> {
-    return (await this.i18n.findStringById(profile.description_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, profile.description_id))!;
   }
 
   @ResolveField(() => String)
@@ -59,7 +61,7 @@ export class ProfilesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(profile.first_name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, profile.first_name_id, lang ?? context);
   }
   @ResolveField(() => String)
   async last_name(
@@ -67,7 +69,7 @@ export class ProfilesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(profile.last_name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, profile.last_name_id, lang ?? context);
   }
   @ResolveField(() => String)
   async description(
@@ -75,14 +77,14 @@ export class ProfilesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(profile.description_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, profile.description_id, lang ?? context);
   }
 
   @ResolveField(() => ThinI18nString)
   async full_name_i18n(@Parent() profile: Profile): Promise<ThinI18nString> {
     return this.i18n.combineStrings(
-      await this.i18n.findTranslationsByStringId(profile.first_name_id),
-      await this.i18n.findTranslationsByStringId(profile.first_name_id),
+      await this.dataLoader.findById(this.i18n.translations, profile.first_name_id),
+      await this.dataLoader.findById(this.i18n.translations, profile.last_name_id),
       (first_name, last_name) => `${first_name} ${last_name}`,
     );
   }
@@ -117,11 +119,14 @@ export class ProfilesResolver {
 
 @Resolver(ProfileLink)
 export class ProfileLinksResolver {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly dataLoader: DataLoaderService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @ResolveField(() => I18nString)
   async text_i18n(@Parent() link: ProfileLink): Promise<I18nString> {
-    return (await this.i18n.findStringById(link.text_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, link.text_id))!;
   }
 
   @ResolveField(() => String)
@@ -130,13 +135,14 @@ export class ProfileLinksResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(link.text_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, link.text_id, lang ?? context);
   }
 }
 
 @Resolver(WorkExperience)
 export class WorkExperiencesResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly profilesService: ProfilesService,
     private readonly companiesService: CompaniesService,
     private readonly i18n: I18nService,
@@ -153,7 +159,7 @@ export class WorkExperiencesResolver {
 
   @ResolveField(() => I18nString)
   async title_i18n(@Parent() exp: WorkExperience): Promise<I18nString> {
-    return (await this.i18n.findStringById(exp.title_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, exp.title_id))!;
   }
 
   @ResolveField(() => String)
@@ -162,7 +168,7 @@ export class WorkExperiencesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(exp.title_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, exp.title_id, lang ?? context);
   }
 
   @ResolveField(() => [WorkSkill], { complexity: est => 10 * est.childComplexity })
@@ -178,6 +184,7 @@ export class WorkExperiencesResolver {
 @Resolver(ProjectExperience)
 export class ProjectExperiencesResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly profilesService: ProfilesService,
     private readonly projectsService: ProjectsService,
     private readonly i18n: I18nService,
@@ -194,7 +201,7 @@ export class ProjectExperiencesResolver {
 
   @ResolveField(() => I18nString, { nullable: true })
   async title_i18n(@Parent() exp: ProjectExperience): Promise<I18nString | null> {
-    return exp.title_id ? (await this.i18n.findStringById(exp.title_id))! : null;
+    return exp.title_id ? (await this.dataLoader.findById(this.i18n.strings, exp.title_id))! : null;
   }
 
   @ResolveField(() => String, { nullable: true })
@@ -203,7 +210,7 @@ export class ProjectExperiencesResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string | null> {
-    return exp.title_id ? this.i18n.resolve(exp.title_id, lang ?? context) : null;
+    return exp.title_id ? this.dataLoader.resolve(this.i18n, exp.title_id, lang ?? context) : null;
   }
 
   @ResolveField(() => [ProjectSkill], { complexity: est => 10 * est.childComplexity })
@@ -219,6 +226,7 @@ export class ProjectExperiencesResolver {
 @Resolver(WorkSkill)
 export class WorkSkillsResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly profilesService: ProfilesService,
     private readonly skillsService: SkillsService,
     private readonly i18n: I18nService,
@@ -238,13 +246,14 @@ export class WorkSkillsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve((await this.skill(skill)).name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, (await this.skill(skill)).name_id, lang ?? context);
   }
 }
 
 @Resolver(ProjectSkill)
 export class ProjectSkillsResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly profilesService: ProfilesService,
     private readonly skillsService: SkillsService,
     private readonly i18n: I18nService,
@@ -264,17 +273,20 @@ export class ProjectSkillsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve((await this.skill(skill)).name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, (await this.skill(skill)).name_id, lang ?? context);
   }
 }
 
 @Resolver(WorkAchievement)
 export class WorkAchievementsResolver {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly dataLoader: DataLoaderService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @ResolveField(() => I18nString)
   async description_i18n(@Parent() achievement: WorkAchievement): Promise<I18nString> {
-    return (await this.i18n.findStringById(achievement.description_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, achievement.description_id))!;
   }
 
   @ResolveField(() => String)
@@ -283,17 +295,20 @@ export class WorkAchievementsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(achievement.description_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, achievement.description_id, lang ?? context);
   }
 }
 
 @Resolver(ProjectAchievement)
 export class ProjectAchievementsResolver {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly dataLoader: DataLoaderService,
+    private readonly i18n: I18nService,
+  ) {}
 
   @ResolveField(() => I18nString)
   async description_i18n(@Parent() achievement: WorkAchievement): Promise<I18nString> {
-    return (await this.i18n.findStringById(achievement.description_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, achievement.description_id))!;
   }
 
   @ResolveField(() => String)
@@ -302,6 +317,6 @@ export class ProjectAchievementsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(achievement.description_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, achievement.description_id, lang ?? context);
   }
 }

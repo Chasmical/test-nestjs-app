@@ -8,6 +8,7 @@ import {
   ResolveField,
   Resolver,
 } from "@nestjs/graphql";
+import { DataLoaderService } from "../../prisma/dataloader.service.js";
 import { I18nString } from "../i18n/i18n.models.js";
 import { I18nService } from "../i18n/i18n.service.js";
 import { Skill } from "./skills.model.js";
@@ -16,6 +17,7 @@ import { SkillsService } from "./skills.service.js";
 @Resolver(Skill)
 export class SkillsResolver {
   constructor(
+    private readonly dataLoader: DataLoaderService,
     private readonly skillsService: SkillsService,
     private readonly i18n: I18nService,
   ) {}
@@ -27,7 +29,7 @@ export class SkillsResolver {
 
   @ResolveField(() => I18nString)
   async name_i18n(@Parent() skill: Skill): Promise<I18nString> {
-    return (await this.i18n.findStringById(skill.name_id))!;
+    return (await this.dataLoader.findById(this.i18n.strings, skill.name_id))!;
   }
 
   @ResolveField(() => String)
@@ -36,6 +38,6 @@ export class SkillsResolver {
     @Args("lang", { type: () => String, nullable: true }) lang: string | undefined,
     @Context() context: GqlExecutionContext,
   ): Promise<string> {
-    return this.i18n.resolve(skill.name_id, lang ?? context);
+    return this.dataLoader.resolve(this.i18n, skill.name_id, lang ?? context);
   }
 }

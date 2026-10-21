@@ -2,7 +2,7 @@ import { IncomingMessage } from "node:http";
 import { ExecutionContext, Injectable } from "@nestjs/common";
 import acceptLanguageParser from "accept-language-parser";
 import DataLoader from "dataloader";
-import { BatchableService } from "../../prisma/dataloader.service.js";
+import { BatchableService, DataLoaderService } from "../../prisma/dataloader.service.js";
 import { PrismaService } from "../../prisma/prisma.service.js";
 import {
   I18nString,
@@ -11,13 +11,6 @@ import {
   ThinTranslation,
   Translation,
 } from "./i18n.models.js";
-
-export const INCLUDE_I18N = {
-  include: { translations: true },
-};
-export const INCLUDE_I18N_THIN = {
-  select: { translations: { select: { language_id: true, value: true } } },
-};
 
 @Injectable()
 export class I18nService {
@@ -50,7 +43,7 @@ export class I18nService {
         return tags.map(tag => all.find(lang => lang.ietf_tag === tag) ?? null);
       }),
   };
-  i18nStrings: BatchableService<number, I18nString | null> = {
+  strings: BatchableService<number, I18nString | null> = {
     createLoader: opt => this.prisma.createLoaderById("i18nString", opt),
   };
   translations: BatchableService<number, Translation[]> = {
@@ -64,7 +57,7 @@ export class I18nService {
     return this.languagesByTag.createLoader({ batch: false }).load(ietf_tag);
   }
   findStringById(id: number): Promise<I18nString | null> {
-    return this.i18nStrings.createLoader({ batch: false }).load(id);
+    return this.strings.createLoader({ batch: false }).load(id);
   }
   findTranslationsByStringId(string_id: number): Promise<Translation[]> {
     return this.translations.createLoader({ batch: false }).load(string_id);
@@ -125,6 +118,14 @@ export class I18nService {
     acceptLanguage: ExecutionContext | string | number | null | undefined,
   ): Promise<string> {
     let translations = await this.findTranslationsByStringId(string_id);
+    return this.resolveTranslation(translations, acceptLanguage);
+  }
+  async resolveWithLoader(
+    dataLoaderService: DataLoaderService,
+    string_id: number,
+    acceptLanguage: ExecutionContext | string | number | null | undefined,
+  ): Promise<string> {
+    let translations = await dataLoaderService.findById(this.translations, string_id);
     return this.resolveTranslation(translations, acceptLanguage);
   }
 

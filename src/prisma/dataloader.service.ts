@@ -16,6 +16,12 @@ export class DataLoaderService {
   findById<T extends BatchableService<any, any>>(service: T, id: number): GetModelOf<T> {
     return this.getLoader(service).load(id) as GetModelOf<T>;
   }
+  resolve<T extends { resolveWithLoader: (arg1: DataLoaderService, ...args: any[]) => any }>(
+    service: T,
+    ...args: T["resolveWithLoader"] extends (arg1: any, ...args: infer U) => any ? U : never
+  ): ReturnType<T["resolveWithLoader"]> {
+    return service.resolveWithLoader(this, ...args);
+  }
 }
 
 export interface BatchableService<K, V> {
